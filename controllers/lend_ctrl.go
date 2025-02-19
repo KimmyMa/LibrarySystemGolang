@@ -16,17 +16,17 @@ func AdminLendList(c *gin.Context) {
 	var lends []models.Lend
 	if err := utils.DB.Preload("Book").Preload("ReaderInfo").Find(&lends).Error; err != nil {
 		log.Println("Error fetching lend list:", err)
-		c.HTML(http.StatusOK, "admin_lend_list.html", gin.H{"error": "无法获取借阅记录"})
+		c.HTML(http.StatusOK, "admin_lend.html", gin.H{"error": "无法获取借阅记录"})
 		return
 	}
-	c.HTML(http.StatusOK, "admin_lend_list.html", gin.H{"lends": lends})
+	c.HTML(http.StatusOK, "admin_lend.html", gin.H{"lends": lends})
 }
 
 // ReaderLend 获取当前读者的借阅记录
 func ReaderLend(c *gin.Context) {
 	readerIDStr, err := c.Cookie("readercard")
 	if err != nil {
-		c.HTML(http.StatusOK, "reader_lend_list.html", gin.H{"error": "未找到读者信息"})
+		c.HTML(http.StatusOK, "reader_lend.html", gin.H{"error": "未找到读者信息"})
 		return
 	}
 	readerID, _ := strconv.ParseInt(readerIDStr, 10, 64)
@@ -34,10 +34,10 @@ func ReaderLend(c *gin.Context) {
 	var lends []models.Lend
 	if err := utils.DB.Preload("Book").Preload("ReaderInfo").Where("reader_id = ?", readerID).Find(&lends).Error; err != nil {
 		log.Println("Error fetching my lend list:", err)
-		c.HTML(http.StatusOK, "reader_lend_list.html", gin.H{"error": "无法获取借阅记录"})
+		c.HTML(http.StatusOK, "reader_lend.html", gin.H{"error": "无法获取借阅记录"})
 		return
 	}
-	c.HTML(http.StatusOK, "reader_lend_list.html", gin.H{"lends": lends})
+	c.HTML(http.StatusOK, "reader_lend.html", gin.H{"lends": lends})
 }
 
 // AdminLendDelete 删除借阅记录

@@ -35,7 +35,7 @@ func ReaderBook(c *gin.Context) {
 	// 从Cookie中获取读者ID
 	readerIDStr, err := c.Cookie("readercard")
 	if err != nil {
-		c.HTML(http.StatusOK, "reader_books.html", gin.H{"error": "未找到读者信息"})
+		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "未找到读者信息"})
 		return
 	}
 	readerID, _ := strconv.ParseInt(readerIDStr, 10, 64)
@@ -47,12 +47,12 @@ func ReaderBook(c *gin.Context) {
 	}
 
 	if len(books) > 0 {
-		c.HTML(http.StatusOK, "reader_books.html", gin.H{
+		c.HTML(http.StatusOK, "reader_book.html", gin.H{
 			"books":     books,
 			"myLendMap": myLendMap, // 确保传递到模板中
 		})
 	} else {
-		c.HTML(http.StatusOK, "reader_books.html", gin.H{"error": "没有匹配的图书"})
+		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "没有匹配的图书"})
 	}
 }
 
@@ -62,9 +62,9 @@ func AdminShowBookPage(c *gin.Context) {
 	searchWord := c.Query("searchWord")
 	books := queryBook(searchWord)
 	if len(books) > 0 {
-		c.HTML(http.StatusOK, "admin_books.html", gin.H{"books": books})
+		c.HTML(http.StatusOK, "admin_book.html", gin.H{"books": books})
 	} else {
-		c.HTML(http.StatusOK, "admin_books.html", gin.H{"error": "没有匹配的图书"})
+		c.HTML(http.StatusOK, "admin_book.html", gin.H{"error": "没有匹配的图书"})
 	}
 
 }
@@ -109,9 +109,9 @@ func AdminShowBookUpdatePage(c *gin.Context) {
 		return
 	}
 	if book != nil {
-		c.HTML(http.StatusOK, "admin_book_edit.html", gin.H{"detail": book, "class_infos": classInfo})
+		c.HTML(http.StatusOK, "admin_book_update.html", gin.H{"detail": book, "class_infos": classInfo})
 	} else {
-		c.HTML(http.StatusBadRequest, "admin_books.html", gin.H{"error": "图书未找到"})
+		c.HTML(http.StatusBadRequest, "admin_book.html", gin.H{"error": "图书未找到"})
 	}
 }
 
@@ -146,7 +146,7 @@ func AdminBookDetail(c *gin.Context) {
 	if book != nil {
 		c.HTML(http.StatusOK, "admin_book_detail.html", gin.H{"detail": book})
 	} else {
-		c.HTML(http.StatusOK, "admin_books.html", gin.H{"error": "图书未找到"})
+		c.HTML(http.StatusOK, "admin_book.html", gin.H{"error": "图书未找到"})
 	}
 }
 
@@ -158,7 +158,7 @@ func ReaderBookDetail(c *gin.Context) {
 	if book != nil {
 		c.HTML(http.StatusOK, "reader_book_detail.html", gin.H{"detail": book})
 	} else {
-		c.HTML(http.StatusOK, "reader_books.html", gin.H{"error": "图书未找到"})
+		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "图书未找到"})
 	}
 }
 

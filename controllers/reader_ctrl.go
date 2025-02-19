@@ -14,10 +14,10 @@ func AdminReader(c *gin.Context) {
 	var readers []models.ReaderInfo
 	if err := utils.DB.Find(&readers).Error; err != nil {
 		fmt.Println("Error fetching readers:", err)
-		c.HTML(http.StatusOK, "admin_readers.html", gin.H{"error": "无法获取读者信息"})
+		c.HTML(http.StatusOK, "admin_reader.html", gin.H{"error": "无法获取读者信息"})
 		return
 	}
-	c.HTML(http.StatusOK, "admin_readers.html", gin.H{"readers": readers})
+	c.HTML(http.StatusOK, "admin_reader.html", gin.H{"readers": readers})
 }
 
 // AdminReaderDelete 删除读者信息
@@ -69,10 +69,10 @@ func ReaderShowInfoUpdatePage(c *gin.Context) {
 
 	readerInfo := getReaderInfo(readerID)
 	if readerInfo == nil {
-		c.HTML(http.StatusOK, "reader_info_edit.html", gin.H{"error": "读者信息未找到"})
+		c.HTML(http.StatusOK, "reader_info_update.html", gin.H{"error": "读者信息未找到"})
 		return
 	}
-	c.HTML(http.StatusOK, "reader_info_edit.html", gin.H{"readerInfo": readerInfo})
+	c.HTML(http.StatusOK, "reader_info_update.html", gin.H{"readerInfo": readerInfo})
 }
 
 // ReaderInfo 显示读者信息页面
@@ -115,7 +115,7 @@ func AdminReaderQuery(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "读者信息未找到"})
 		return
 	}
-	c.HTML(http.StatusOK, "admin_reader_edit.html", gin.H{"readerInfo": readerInfo})
+	c.HTML(http.StatusOK, "admin_reader_update.html", gin.H{"readerInfo": readerInfo})
 }
 
 // AdminReaderUpdate 处理编辑读者信息操作

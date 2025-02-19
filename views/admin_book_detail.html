@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.detail.Name}}</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-image: url('/static/img/book2.jpg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+
+{{template "admin_header.html" .}}
+<div id="header" style="padding-bottom: 80px"></div>
+
+<div class="col-xs-6 col-md-offset-3">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">{{.detail.Name}}</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-hover">
+                <tbody>
+                <tr>
+                    <th width="15%">书名</th>
+                    <td>{{.detail.Name}}</td>
+                </tr>
+                <tr>
+                    <th>作者</th>
+                    <td>{{.detail.Author}}</td>
+                </tr>
+                <tr>
+                    <th>出版社</th>
+                    <td>{{.detail.Publish}}</td>
+                </tr>
+                <tr>
+                    <th>ISBN</th>
+                    <td>{{.detail.ISBN}}</td>
+                </tr>
+                <tr>
+                    <th>简介</th>
+                    <td>{{.detail.Introduction}}</td>
+                </tr>
+                <tr>
+                    <th>语言</th>
+                    <td>{{.detail.Language}}</td>
+                </tr>
+                <tr>
+                    <th>价格</th>
+                    <td>{{.detail.Price}}</td>
+                </tr>
+                <tr>
+                    <th>出版日期</th>
+                    <td>{{.detail.PubDate}}</td>
+                </tr>
+                <tr>
+                    <th>分类</th>
+                    <td>{{.detail.ClassInfo.ClassName}}</td>
+                </tr>
+                <tr>
+                    <th>数量</th>
+                    <td>{{.detail.Number}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

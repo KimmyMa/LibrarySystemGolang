@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>读者主页</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-image: url('/static/img/book2.jpg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+{{template "admin_header.html" .}}
+<div id="header"></div>
+
+<div class="col-xs-6 col-md-offset-3" style="position: relative;">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">密码修改</h3>
+        </div>
+        <div class="panel-body">
+            <form method="put" action="/admin/repasswd" class="form-inline" id="repasswd">
+                <div class="input-group">
+                    <input type="password" id="oldPasswd" name="oldPasswd" placeholder="输入旧密码"
+                           class="form-control">
+                    <input type="password" id="newPasswd" name="newPasswd" placeholder="输入新密码"
+                           class="form-control">
+                    <input type="password" id="reNewPasswd" name="reNewPasswd" placeholder="再次输入新密码"
+                           class="form-control">
+                    <em id="warning" style="color: red"></em>
+                    <br>
+                    <button type="submit">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 监听键盘输入事件，实时检查两次输入的新密码是否一致
+    $(document).keyup(function () {
+        if ($("#newPasswd").val() !== $("#reNewPasswd").val() && $("#newPasswd").val() !== "" && $("#reNewPasswd").val() !== "") {
+            $("#warning").text("提示:两次输入的新密码不同，请检查!");
+        } else {
+            $("#warning").text("");
+        }
+    });
+
+    // 表单提交逻辑
+    function submitForm() {
+        const oldPasswd = $("#oldPasswd").val();
+        const newPasswd = $("#newPasswd").val();
+        const reNewPasswd = $("#reNewPasswd").val();
+        if (oldPasswd === '' || newPasswd === '' || reNewPasswd === '') {
+            alert("提示:请填写完整!");
+            return;
+        }
+
+        if (newPasswd !== reNewPasswd) {
+            alert("提示:两次输入的新密码不同，请检查!");
+            return;
+        }
+        const formData = {
+            oldPasswd: oldPasswd,
+            newPasswd: newPasswd,
+        };
+        fetch('/admin/repasswd', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json().then(data => ({status: response.status, body: data})))
+            .then(({status, body}) => {
+                if (status === 200) {
+                    alert(body.succ || '密码修改成功!');
+                    window.location.href = "/admin";
+                } else {
+                    alert(body.error || '发生错误，请稍后再试');
+                    window.location.href = "/admin";
+                }
+            })
+            .catch(error => {
+                alert('Ops 发生了一个意料之外的错误.');
+                console.error('Error:', error)
+                window.location.href = "/admin";
+            });
+    }
+
+    // 绑定表单提交事件
+    document.getElementById('repasswd').addEventListener('submit', function (event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+        submitForm(); // 调用自定义提交逻辑
+    });
+</script>
+</body>
+</html>

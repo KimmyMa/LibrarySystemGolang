@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>读者信息</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-image: url('/static/img/lizhi.jpg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+{{template "reader_header.html" .}}
+<div id="header"></div>
+
+<div style="position: relative; top: 15%">
+    {{if .succ}}
+        <div class="alert alert-success alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            {{.succ}}
+        </div>
+    {{end}}
+    {{if .error}}
+        <div class="alert alert-danger alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            {{.error}}
+        </div>
+    {{end}}
+</div>
+
+<div class="panel panel-default" style="position: relative; top: 80px; width: 90%; margin-left: 5%">
+    <div class="panel-heading">
+        <h3 class="panel-title">我的信息</h3>
+    </div>
+    <div class="panel-body">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>读者证号</th>
+                <th>姓名</th>
+                <th>性别</th>
+                <th>生日</th>
+                <th>地址</th>
+                <th>电话</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{if .readerinfo}}
+                <tr>
+                    <td>{{.readerinfo.ReaderID}}</td>
+                    <td>{{.readerinfo.Name}}</td>
+                    <td>{{.readerinfo.Sex}}</td>
+                    <td>{{.readerinfo.Birth}}</td>
+                    <td>{{.readerinfo.Address}}</td>
+                    <td>{{.readerinfo.Phone}}</td>
+                </tr>
+            {{else}}
+                <tr>
+                    <td colspan="6" class="text-center">未找到读者信息</td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </div>
+    <div class="panel-footer">
+        <a class="btn btn-success btn-sm" href="/reader/info/update/{{.readerinfo.ReaderID}}" role="button">修改</a>
+    </div>
+</div>
+</body>
+</html>

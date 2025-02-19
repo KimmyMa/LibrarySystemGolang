@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全部图书信息</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-image: url('/static/img/lizhi.jpg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+{{template "reader_header.html" .}}
+<div id="header"></div>
+
+<div style="padding: 20px 550px 10px">
+    <form class="form-inline" id="searchform">
+        <div class="input-group">
+            <input type="text" placeholder="输入图书名" class="form-control" id="search" name="searchWord">
+            <span class="input-group-btn">
+                <input type="submit" value="搜索" class="btn btn-default" onclick="searchBook($('#search').val())">
+            </span>
+        </div>
+    </form>
+    <script>
+        $("#searchform").submit(function () {
+            var val = $("#search").val();
+            if (val == '') {
+                alert("请输入关键字");
+                return false;
+            }
+        });
+    </script>
+</div>
+
+<div class="panel panel-default" style="width: 90%; margin-left: 5%">
+    <div class="panel-heading" style="background-color: #fff">
+        <h3 class="panel-title">全部图书</h3>
+    </div>
+    <div class="panel-body">
+        <table class="table table-hover" id="books-table">
+            <thead>
+            <tr>
+                <th>书名</th>
+                <th>作者</th>
+                <th>出版社</th>
+                <th>ISBN</th>
+                <th>语言</th>
+                <th>出版日期</th>
+                <th>分类</th>
+                <th>价格</th>
+                <th>剩余数量</th>
+                <th>借还</th>
+                <th>详情</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range .books}}
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Author}}</td>
+                <td>{{.Publish}}</td>
+                <td>{{.ISBN}}</td>
+                <td>{{.Language}}</td>
+                <td>{{.PubDate}}</td>
+                <td>{{.ClassInfo.ClassName}}</td>
+                <td>{{.Price}}</td>
+                <td>{{.Number}}</td>
+                <td>
+                    {{if index $.myLendMap .BookID}}
+                    <a>
+                        <button type="button" class="btn btn-warning btn-xs" onclick="returnBook({{.BookID}})">归还
+                        </button>
+                    </a>
+                    {{else}}
+                    {{if gt .Number 0}}
+                    <a>
+                        <button type="button" class="btn btn-primary btn-xs" onclick="lendBook({{.BookID}})">借阅
+                        </button>
+                    </a>
+                    {{else}}
+                    <button type="button" class="btn btn-default btn-xs" disabled>已空</button>
+                    {{end}}
+                    {{end}}
+                </td>
+                <td>
+                    <a href="/reader/book/{{.BookID}}">
+                        <button type="button" class="btn btn-success btn-xs">详情</button>
+                    </a>
+                </td>
+            </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    function searchBook(bookName) {
+        fetch('/reader/book/?searchWord=' + bookName, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+    }
+
+    function returnBook(bookId) {
+        // 使用 PUT 请求发送数据到后端
+        fetch(`/reader/return/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({bookId: bookId}) // 可以根据需要发送更多数据
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.success);
+                    window.location.href = "/reader/book";
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                alert('发生错误: ' + error);
+            });
+    }
+
+    function lendBook(bookId) {
+        // 使用 PUT 请求发送数据到后端
+        fetch(`/reader/lend/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({bookId: bookId}) // 可以根据需要发送更多数据
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.success);
+                    window.location.href = "/reader/book";
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                alert('发生错误: ' + error);
+            });
+    }
+</script>
+</body>
+</html>

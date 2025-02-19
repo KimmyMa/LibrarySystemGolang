@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的借还</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-image: url('/static/img/lizhi.jpg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+{{template "reader_header.html" .}}
+<div id="header"></div>
+
+<div style="position: relative; top: 10%">
+    <div id="messages" class="alert alert-dismissible" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <span id="messageText"></span>
+    </div>
+</div>
+
+<div class="panel panel-default" style="width: 90%; margin-left: 5%; margin-top: 5%">
+    <div class="panel-heading">
+        <h3 class="panel-title">我的借还日志</h3>
+    </div>
+    <div class="panel-body">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>流水号</th>
+                <th>图书号</th>
+                <th>图书名</th>
+                <th>读者证号</th>
+                <th>姓名</th>
+                <th>借出日期</th>
+                <th>归还日期</th>
+                <th>状态</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range .lends}}
+                <tr>
+                    <td>{{.SerNum}}</td>
+                    <td>{{.BookID}}</td>
+                    <td>{{.Book.Name}}</td>
+                    <td>{{.ReaderID}}</td>
+                    <td>{{.ReaderInfo.Name}}</td>
+                    <td>{{.LendDate}}</td>
+                    <td>{{.BackDate}}</td>
+                    <td>
+                        {{if eq .BackDate.String ""}}未还{{else}}已还{{end}}
+                    </td>
+                </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

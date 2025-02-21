@@ -4,7 +4,7 @@
 ### 概述
 借鉴项目: https://github.com/zhanghuanhao/LibrarySystem
 
-基于此项目使用Golang + Gin + GORM + RESTful重构之后的图书馆管理系统. 
+基于此项目使用Golang + MVC架构 + Gin + GORM + RESTful API重构之后的图书馆管理系统. 
 
 主要功能包括：图书查询、图书管理、图书编辑、读者管理、图书的借阅与归还以及借还日志记录等. 
 

@@ -112,6 +112,9 @@
     }
 
     function returnBook(bookId) {
+        if (!confirm("确认归还图书")){
+            return
+        }
         // 使用 PUT 请求发送数据到后端
         fetch(`/reader/return/${bookId}`, {
             method: 'PUT',
@@ -135,6 +138,9 @@
     }
 
     function lendBook(bookId) {
+        if (!confirm("确认借阅图书")){
+            return
+        }
         // 使用 PUT 请求发送数据到后端
         fetch(`/reader/lend/${bookId}`, {
             method: 'PUT',

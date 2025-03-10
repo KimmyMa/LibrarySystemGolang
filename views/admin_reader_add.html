@@ -29,7 +29,7 @@
             <form id="readeradd">
                 <div class="input-group" style="padding-top: 20px;">
                     <span class="input-group-addon">密码</span>
-                    <input type="password" class="form-control" name="password" id="password">
+                    <input type="password" class="form-control" name="password" id="password", placeholder="请输入 8 - 16 位包含字母、数字和特殊字符的密码">
                 </div>
                 <div class="input-group" style="padding-top: 20px;">
                     <span class="input-group-addon">姓名</span>
@@ -37,7 +37,11 @@
                 </div>
                 <div class="input-group" style="padding-top: 20px;">
                     <span class="input-group-addon">性别</span>
-                    <input type="text" class="form-control" name="sex" id="sex">
+                    <select class="form-control" name="sex" id="sex">
+                        <option value="">请选择性别</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
                 </div>
                 <div class="input-group" style="padding-top: 20px;">
                     <span class="input-group-addon">生日</span>

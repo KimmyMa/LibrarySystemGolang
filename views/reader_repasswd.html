@@ -28,9 +28,12 @@
         <div class="panel-body">
             <form method="put" action="/reader/repasswd" class="form-inline" id="repasswd">
                 <div class="input-group">
-                    <input type="password" id="oldPasswd" name="oldPasswd" placeholder="输入旧密码" class="form-control">
-                    <input type="password" id="newPasswd" name="newPasswd" placeholder="输入新密码" class="form-control">
-                    <input type="password" id="reNewPasswd" name="reNewPasswd" placeholder="再次输入新密码" class="form-control">
+                    <input type="password" id="oldPasswd" name="oldPasswd" placeholder="输入旧密码"
+                           class="form-control">
+                    <input type="password" id="newPasswd" name="newPasswd" placeholder="请输入 8 - 16 位包含字母、数字和特殊字符的密码"
+                           class="form-control">
+                    <input type="password" id="reNewPasswd" name="reNewPasswd" placeholder="再次输入新密码"
+                           class="form-control">
                     <em id="warning" style="color: red"></em>
                     <br>
                     <button type="submit">提交</button>
@@ -55,6 +58,11 @@
         const oldPasswd = $("#oldPasswd").val();
         const newPasswd = $("#newPasswd").val();
         const reNewPasswd = $("#reNewPasswd").val();
+        var passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@**$!%*#?&])[A-Za-z\d@$**!%*#?&]{8,16}$/;
+        if (!passwordRegex.test(newPasswd)) {
+            alert("提示:密码格式错误(8 - 16 位包含字母、数字和特殊字符)!");
+            return;
+        }
         if (oldPasswd === '' || newPasswd === '' || reNewPasswd === '') {
             alert("提示:请填写完整!");
             return;
@@ -65,8 +73,8 @@
             return;
         }
         const formData = {
-                oldPasswd: oldPasswd,
-                newPasswd: newPasswd,
+            oldPasswd: oldPasswd,
+            newPasswd: newPasswd,
         };
         fetch('/reader/repasswd', {
             method: 'PUT',

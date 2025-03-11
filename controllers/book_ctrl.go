@@ -29,8 +29,7 @@ func getMyLendList(readerID int64) []int64 {
 	return myLendList
 }
 func ReaderBook(c *gin.Context) {
-	searchWord := c.Query("searchWord")
-	books := queryBook(searchWord)
+	books := queryBook(c)
 
 	// 从Cookie中获取读者ID
 	readerIDStr, err := c.Cookie("readercard")
@@ -58,9 +57,7 @@ func ReaderBook(c *gin.Context) {
 
 // AdminShowBookPage 获取所有图书
 func AdminShowBookPage(c *gin.Context) {
-
-	searchWord := c.Query("searchWord")
-	books := queryBook(searchWord)
+	books := queryBook(c)
 	if len(books) > 0 {
 		c.HTML(http.StatusOK, "admin_book.html", gin.H{"books": books})
 	} else {
@@ -163,12 +160,16 @@ func ReaderBookDetail(c *gin.Context) {
 }
 
 // 辅助函数
-func queryBook(name string) []models.Book {
-	if name == "" {
+func queryBook(c *gin.Context) []models.Book {
+	// 获取前端传入的查询参数
+	searchField := c.Query("search_field")
+	searchKeyword := c.Query("search_keyword")
+	if searchKeyword == "" {
 		return getAllBooks()
 	}
 	var books []models.Book
-	if err := utils.DB.Preload("ClassInfo").Where("name LIKE ?", "%"+name+"%").Find(&books).Error; err != nil {
+	var querySql = fmt.Sprintf("%s LIKE ?", searchField)
+	if err := utils.DB.Preload("ClassInfo").Where(querySql, "%"+searchKeyword+"%").Find(&books).Error; err != nil {
 		fmt.Println("Error querying books:", err)
 	}
 	return books

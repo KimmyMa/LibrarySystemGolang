@@ -23,21 +23,21 @@
 <div style="padding: 20px 550px 10px">
     <form class="form-inline" id="searchform">
         <div class="input-group">
-            <input type="text" placeholder="输入图书名" class="form-control" id="search" name="searchWord">
+            <select class="form-control" name="search_field" id="search_field">
+                <option value="name">图书名</option>
+                <option value="author">作者</option>
+                <option value="publish">出版社</option>
+                <option value="isbn">ISBN</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <input type="text" placeholder="输入关键字" class="form-control" id="search_keyword" name="search_keyword"
+                   class="form-control">
             <span class="input-group-btn">
-                <input type="submit" value="搜索" class="btn btn-default" onclick="searchBook($('#search').val())">
+                <input type="submit" value="搜索" class="btn btn-default" onclick="searchBook()">
             </span>
         </div>
     </form>
-    <script>
-        $("#searchform").submit(function () {
-            var val = $("#search").val();
-            if (val == '') {
-                alert("请输入关键字");
-                return false;
-            }
-        });
-    </script>
 </div>
 
 <div class="panel panel-default" style="width: 90%; margin-left: 5%">
@@ -102,8 +102,14 @@
     </div>
 </div>
 <script>
-    function searchBook(bookName) {
-        fetch('/reader/book/?searchWord=' + bookName, {
+    function searchBook() {
+        var searchField = $("#search_field").val(); // 获取下拉框的值
+        var searchKeyword = $("#search_keyword").val(); // 获取输入框的值
+        if (searchKeyword == '') {
+            alert("请输入关键词");
+            return;
+        }
+        fetch('/admin/book/?search_field=' + searchField + '&search_keyword=' + searchKeyword, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

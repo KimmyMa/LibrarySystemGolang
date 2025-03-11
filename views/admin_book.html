@@ -22,37 +22,37 @@
 <div id="header"></div>
 
 <div style="padding: 70px 550px 10px">
-    <form  class="form-inline" id="searchform">
+    <form class="form-inline" id="searchform">
         <div class="input-group">
-            <input type="text" placeholder="输入图书名" class="form-control" id="search" name="searchWord" class="form-control">
+            <select class="form-control" name="search_field" id="search_field">
+                <option value="name">图书名</option>
+                <option value="author">作者</option>
+                <option value="publish">出版社</option>
+                <option value="isbn">ISBN</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <input type="text" placeholder="输入关键字" class="form-control" id="search_keyword" name="search_keyword"
+                   class="form-control">
             <span class="input-group-btn">
-                <input type="submit" value="搜索" class="btn btn-default" onclick="searchBook($('#search').val())">
+                <input type="submit" value="搜索" class="btn btn-default" onclick="searchBook()">
             </span>
         </div>
     </form>
-    <script>
-        $("#searchform").submit(function () {
-            var val = $("#search").val();
-            if (val == '') {
-                alert("请输入关键字");
-                return false;
-            }
-        });
-    </script>
 </div>
 
 <div style="position: relative; top: 10%">
     {{if .succ}}
-        <div class="alert alert-success alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            {{.succ}}
-        </div>
+    <div class="alert alert-success alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        {{.succ}}
+    </div>
     {{end}}
     {{if .error}}
-        <div class="alert alert-danger alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            {{.error}}
-        </div>
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        {{.error}}
+    </div>
     {{end}}
 </div>
 
@@ -80,30 +80,30 @@
             </thead>
             <tbody>
             {{range .books}}
-                <tr>
-                    <td>{{.Name}}</td>
-                    <td>{{.Author}}</td>
-                    <td>{{.Publish}}</td>
-                    <td>{{.ISBN}}</td>
-                    <td>{{.Language}}</td>
-                    <td>{{.PubDate}}</td>
-                    <td>{{.ClassInfo.ClassName}}</td>
-                    <td>{{.Price}}</td>
-                    <td>{{.Number}}</td>
-                    <td>
-                        <a href="/admin/book/{{.BookID}}">
-                            <button type="button" class="btn btn-success btn-xs">详情</button>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="/admin/book/update/{{.BookID}}">
-                            <button type="button" class="btn btn-info btn-xs">编辑</button>
-                        </a>
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-xs" onclick="deleteBook({{.BookID}})">删除</button>
-                    </td>
-                </tr>
+            <tr>
+                <td>{{.Name}}</td>
+                <td>{{.Author}}</td>
+                <td>{{.Publish}}</td>
+                <td>{{.ISBN}}</td>
+                <td>{{.Language}}</td>
+                <td>{{.PubDate}}</td>
+                <td>{{.ClassInfo.ClassName}}</td>
+                <td>{{.Price}}</td>
+                <td>{{.Number}}</td>
+                <td>
+                    <a href="/admin/book/{{.BookID}}">
+                        <button type="button" class="btn btn-success btn-xs">详情</button>
+                    </a>
+                </td>
+                <td>
+                    <a href="/admin/book/update/{{.BookID}}">
+                        <button type="button" class="btn btn-info btn-xs">编辑</button>
+                    </a>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-xs" onclick="deleteBook({{.BookID}})">删除</button>
+                </td>
+            </tr>
             {{end}}
             </tbody>
         </table>
@@ -111,14 +111,21 @@
 </div>
 
 <script>
-    function searchBook(bookName) {
-        fetch('/admin/book/?searchWord=' + bookName, {
+    function searchBook() {
+        var searchField = $("#search_field").val(); // 获取下拉框的值
+        var searchKeyword = $("#search_keyword").val(); // 获取输入框的值
+        if (searchKeyword == '') {
+            alert("请输入关键词");
+            return;
+        }
+        fetch('/admin/book/?search_field=' + searchField + '&search_keyword=' + searchKeyword, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
             }
         })
     }
+
     function deleteBook(bookId) {
         if (confirm("确定要删除这本书吗？")) {
             fetch('/admin/book/' + bookId, {
@@ -127,18 +134,18 @@
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.success);
-                    window.location.href = "/admin/book";
-                } else {
-                    alert(data.error);
-                }
-            })
-            .catch(error => {
-                alert('发生错误: ' + error);
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.success);
+                        window.location.href = "/admin/book";
+                    } else {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('发生错误: ' + error);
+                });
         }
     }
 </script>

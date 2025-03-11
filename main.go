@@ -7,6 +7,7 @@ import (
 
 func main() {
 	r := gin.Default()
+	r.Use(controllers.ErrorMiddleware())
 	r.LoadHTMLGlob("views/*")
 	r.Static("/views", "./views")
 	r.Static("/static", "./static")

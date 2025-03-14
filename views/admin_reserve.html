@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预约审批</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-image: url('/static/img/u5.jpeg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+{{template "admin_header.html" .}}
+<div id="header"></div>
+
+
+<div style="position: relative; padding-top: 100px">
+    <div id="messages" class="alert alert-dismissible" style="display: none;">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <span id="messageText"></span>
+    </div>
+</div>
+
+<div class="panel panel-default" style="width: 90%; margin-left: 5%">
+    <div class="panel-heading">
+        <h3 class="panel-title">预约审批</h3>
+    </div>
+    <div class="panel-body">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>流水号</th>
+                <th>图书号</th>
+                <th>图书名</th>
+                <th>读者证号</th>
+                <th>姓名</th>
+                <th>申请日期</th>
+                <th>通过日期</th>
+                <th>通过</th>
+                <th>删除</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range .reserve}}
+            <tr>
+                <td>{{.SerNum}}</td>
+                <td>{{.BookID}}</td>
+                <td>{{.Book.Name}}</td>
+                <td>{{.ReaderID}}</td>
+                <td>{{.ReaderInfo.Name}}</td>
+                <td>{{.RequireDate}}</td>
+                <td>{{.AcceptDate}}</td>
+                <td>
+                    <button type="button" class="btn btn-success btn-xs" onclick="acceptReserve({{.SerNum}})">通过
+                </td>
+                <td>
+                    {{if eq .AcceptDate.String ""}}
+                    <button type="button" class="btn btn-danger btn-xs" onclick="deleteReserve({{.SerNum}})">删除
+                    </button>
+                    {{else}}
+                    <button type="button" class="btn btn-danger btn-xs" disabled>删除</button>
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function acceptReserve(serNum) {
+        if (confirm("确定要通过这条记录吗？")) {
+            fetch(`/admin/reserve/${serNum}`, {
+                method: 'PUT'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.success);
+                        window.location.href = "/admin/reserve";
+                    } else {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('发生错误: ' + error);
+                });
+        }
+    }
+
+    function deleteReserve(serNum) {
+        if (confirm("确定要删除这条记录吗？")) {
+            fetch(`/admin/reserve/${serNum}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.success);
+                        window.location.href = "/admin/reserve";
+                    } else {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('发生错误: ' + error);
+                });
+        }
+    }
+
+</script>
+</body>
+</html>

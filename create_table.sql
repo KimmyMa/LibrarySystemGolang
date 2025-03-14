@@ -30,7 +30,7 @@ CREATE TABLE `books`
     `language`     VARCHAR(4)     NOT NULL,
     `price`        DECIMAL(10, 2) NOT NULL,
     `pub_date`     VARCHAR(10)    NOT NULL,
-    `class_id`     INT NOT NULL,
+    `class_id`     INT            NOT NULL,
     `number`       INT DEFAULT NULL,
     `image`        TEXT
 ) ENGINE = INNODB
@@ -51,6 +51,20 @@ CREATE TABLE `lends`
   DEFAULT CHARSET = utf8;
 
 ALTER TABLE `lends`
+    MODIFY `ser_num` BIGINT NOT NULL AUTO_INCREMENT,
+    AUTO_INCREMENT = 1;
+
+CREATE TABLE `reserves`
+(
+    `ser_num`      BIGINT NOT NULL PRIMARY KEY,
+    `book_id`      BIGINT NOT NULL,
+    `reader_id`    BIGINT NOT NULL,
+    `require_date` DATE DEFAULT NULL,
+    `accept_date`  DATE DEFAULT NULL
+) ENGINE = INNODB
+  DEFAULT CHARSET = utf8;
+
+ALTER TABLE `reserves`
     MODIFY `ser_num` BIGINT NOT NULL AUTO_INCREMENT,
     AUTO_INCREMENT = 1;
 
@@ -91,6 +105,18 @@ ALTER TABLE `lends`
 
 ALTER TABLE `lends`
     ADD CONSTRAINT `fk_lends_reader_id`
+        FOREIGN KEY (`reader_id`) REFERENCES `reader_infos` (`reader_id`)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE;
+
+ALTER TABLE `reserves`
+    ADD CONSTRAINT `fk_reserves_book_id`
+        FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`)
+            ON DELETE RESTRICT
+            ON UPDATE CASCADE;
+
+ALTER TABLE `reserves`
+    ADD CONSTRAINT `fk_reserves_reader_id`
         FOREIGN KEY (`reader_id`) REFERENCES `reader_infos` (`reader_id`)
             ON DELETE RESTRICT
             ON UPDATE CASCADE;

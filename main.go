@@ -39,6 +39,9 @@ func main() {
 		authorized.GET("/admin/book/export", controllers.AdminBookExport)
 
 		// 管理员借阅相关路由
+		authorized.GET("/admin/reserve", controllers.AdminReserveList)
+		authorized.PUT("/admin/reserve/:id", controllers.AdminReserveAccept)
+		authorized.DELETE("/admin/reserve/:id", controllers.AdminReserveDelete)
 		authorized.GET("/admin/lend", controllers.AdminLendList)
 		authorized.DELETE("/admin/lend/:id", controllers.AdminLendDelete)
 
@@ -67,6 +70,7 @@ func main() {
 		authorized.GET("/reader/lend", controllers.ReaderLend)
 		authorized.PUT("/reader/lend/:id", controllers.ReaderLendBook)
 		authorized.PUT("/reader/return/:id", controllers.ReaderReturnBook)
+		authorized.PUT("/reader/reserve/:id", controllers.ReaderReservationBook)
 	}
 
 	// 404页面

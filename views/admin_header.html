@@ -13,14 +13,17 @@
             width: 100%;
             background-color: #25c6fc;
         }
+
         .navbar-brand {
             font-family: "华文行楷", sans-serif;
             font-size: 250%;
             color: white;
         }
+
         .navbar-nav > li > a {
             color: white;
         }
+
         .navbar-nav > li.active > a {
             background-color: #007bff; /* 活动状态的背景颜色 */
             color: white; /* 活动状态的文字颜色 */
@@ -44,6 +47,7 @@
                         <li><a href="/admin/book" class="nav-link" data-nav="nav-book">全部图书</a></li>
                         <li class="divider"></li>
                         <li><a href="/admin/book/add" class="nav-link" data-nav="nav-book-add">增加单本图书</a></li>
+                        <li class="divider"></li>
                         <li><a href="/admin/book/import" class="nav-link" data-nav="nav-book-add">导入/导出图书</a></li>
                     </ul>
                 </li>
@@ -59,11 +63,10 @@
                     </ul>
                 </li>
                 <li id="nav-lend" class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        借还管理
-                        <b class="caret"></b>
-                    </a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"> 借阅管理 <b class="caret"></b> </a>
                     <ul class="dropdown-menu">
+                        <li><a href="/admin/reserve" class="nav-link" data-nav="nav-lend">图书预约审批</a></li>
+                        <li class="divider"></li>
                         <li><a href="/admin/lend" class="nav-link" data-nav="nav-lend">借还日志</a></li>
                     </ul>
                 </li>

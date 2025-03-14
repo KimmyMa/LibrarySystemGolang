@@ -3,13 +3,22 @@ package controllers
 import (
 	"LibrarySystemGolang/models"
 	"LibrarySystemGolang/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+func AdminReserveList(c *gin.Context) {
+	var reserve []models.Reserve
+	if err := utils.DB.Preload("Book").Preload("ReaderInfo").Find(&reserve).Error; err != nil {
+		log.Println("Error fetching reserve list:", err)
+		c.HTML(http.StatusOK, "admin_reserve.html", gin.H{"error": "无法获取预约记录"})
+		return
+	}
+	c.HTML(http.StatusOK, "admin_reserve.html", gin.H{"reserve": reserve})
+}
 
 // AdminLendList 获取所有借阅记录
 func AdminLendList(c *gin.Context) {
@@ -38,6 +47,46 @@ func ReaderLend(c *gin.Context) {
 		return
 	}
 	c.HTML(http.StatusOK, "reader_lend.html", gin.H{"lends": lends})
+}
+func AdminReserveAccept(c *gin.Context) {
+	serNumStr := c.Param("id")
+	serNum, err := strconv.ParseInt(serNumStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的序列号"})
+		return
+	}
+
+	// 检查读者是否已经借阅了这本书
+	var reserve models.Reserve
+	if err := utils.DB.Where("ser_num = ?", serNum).First(&reserve).Error; err != nil {
+		log.Println("Error fetching reserve record:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "未找到预约记录"})
+		return
+	}
+	reserve.SerNum = serNum
+	// 更新借阅记录的归还日期
+	reserve.AcceptDate = models.LocalDate(time.Now())
+	if err := utils.DB.Where(reserve.SerNum).Save(&reserve).Error; err != nil {
+		log.Println("Error updating reserve record:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "预约通过失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": "预约通过"})
+}
+func AdminReserveDelete(c *gin.Context) {
+	serNumStr := c.Param("id")
+	serNum, err := strconv.ParseInt(serNumStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的序列号"})
+		return
+	}
+
+	if err = utils.DB.Where("ser_num = ?", serNum).Delete(&models.Reserve{}).Error; err != nil {
+		log.Println("Error deleting reserve record:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "删除预约记录失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": "预约记录删除成功"})
 }
 
 // AdminLendDelete 删除借阅记录
@@ -139,7 +188,6 @@ func ReaderReturnBook(c *gin.Context) {
 		return
 	}
 	book.Number += 1
-	fmt.Println(book)
 	if err := utils.DB.Where(bookID).Save(&book).Error; err != nil {
 		log.Println("Error updating book number:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "归还失败"})
@@ -147,4 +195,43 @@ func ReaderReturnBook(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": "归还成功"})
+}
+
+// 预约书籍
+func ReaderReservationBook(c *gin.Context) {
+	bookIDStr := c.Param("id")
+	readerIDStr, err := c.Cookie("readercard")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "未找到读者信息"})
+		return
+	}
+	readerID, _ := strconv.ParseInt(readerIDStr, 10, 64)
+	bookID, _ := strconv.ParseInt(bookIDStr, 10, 64)
+	// 检查书籍是否存在
+	var book models.Book
+	if err := utils.DB.First(&book, bookID).Error; err != nil {
+		log.Println("Error fetching book:", err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "书籍不存在"})
+		return
+	}
+	// 检查读者是否已经借阅了这本书
+	var reserve models.Reserve
+	if err := utils.DB.Where("book_id = ? AND reader_id = ?", bookID, readerID).First(&reserve).Error; err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "您已经预约了这本书"})
+		return
+	}
+	// 插入借阅记录
+	reserve = models.Reserve{
+		BookID:      bookID,
+		ReaderID:    readerID,
+		RequireDate: models.LocalDate(time.Now()),
+		AcceptDate:  models.LocalDate{},
+	}
+	if err := utils.DB.Create(&reserve).Error; err != nil {
+		log.Println("Error creating reserve record:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "预约失败"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": "预约成功"})
 }

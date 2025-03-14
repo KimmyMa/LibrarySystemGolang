@@ -73,6 +73,7 @@
                 <th>分类</th>
                 <th>价格</th>
                 <th>剩余数量</th>
+                <th>图片</th>
                 <th>详情</th>
                 <th>编辑</th>
                 <th>删除</th>
@@ -90,6 +91,9 @@
                 <td>{{.ClassInfo.ClassName}}</td>
                 <td>{{.Price}}</td>
                 <td>{{.Number}}</td>
+                <td>
+                    <img src="{{.Image}}" alt="图书图片" style="width: 100px; height: auto; max-width: 100%;">
+                </td>
                 <td>
                     <a href="/admin/book/{{.BookID}}">
                         <button type="button" class="btn btn-success btn-xs">详情</button>

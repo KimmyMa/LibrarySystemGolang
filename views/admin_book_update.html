@@ -49,6 +49,11 @@
                            value="{{.detail.Introduction}}">
                 </div>
                 <div class="input-group">
+                    <span class="input-group-addon">图片</span>
+                    <input type="text" class="form-control" name="image" id="image"
+                           value="{{.detail.Image}}">
+                </div>
+                <div class="input-group">
                     <span class="input-group-addon">语言</span>
                     <input type="text" class="form-control" name="language" id="language" value="{{.detail.Language}}">
                 </div>
@@ -96,6 +101,7 @@
             publish: document.getElementById('publish').value,
             isbn: document.getElementById('isbn').value,
             introduction: document.getElementById('introduction').value,
+            image: document.getElementById('image').value,
             language: document.getElementById('language').value,
             pub_date: document.getElementById('pub_date').value,
             class_id: parseInt(document.getElementById('class_id').value),
@@ -104,7 +110,7 @@
         };
 
         // 验证表单数据是否完整
-        if (bookData.name === '' || bookData.author === '' || bookData.publish === '' || bookData.isbn === '' || bookData.introduction === '' || bookData.language === '' || bookData.price === '' || bookData.class_id === '' || bookData.number === '') {
+        if (bookData.name === '' || bookData.author === '' || bookData.publish === '' || bookData.isbn === '' || bookData.introduction === '' || bookData.image === '' || bookData.language === '' || bookData.price === '' || bookData.class_id === '' || bookData.number === '') {
             alert("请填入完整图书信息！");
             return;
         }

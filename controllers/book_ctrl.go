@@ -3,10 +3,12 @@ package controllers
 import (
 	"LibrarySystemGolang/models"
 	"LibrarySystemGolang/utils"
+	"encoding/csv"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -90,6 +92,145 @@ func AdminBookCreate(c *gin.Context) {
 	} else {
 		fmt.Println("图书添加失败")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "图书添加失败"})
+	}
+}
+func AdminShowBookImportPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "admin_book_import.html", gin.H{"success": ""})
+}
+
+func AdminBookImport(c *gin.Context) {
+	file, err := c.FormFile("bookFile") // 获取导入的文件
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "文件导入失败"})
+		return
+	}
+
+	// 保存文件到服务器
+	filePath := fmt.Sprintf("./uploads/%s", file.Filename)
+	if err := c.SaveUploadedFile(file, filePath); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "文件保存失败"})
+		return
+	}
+
+	// 打开 CSV 文件
+	csvFile, err := os.Open(filePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法打开文件"})
+		return
+	}
+	defer csvFile.Close()
+
+	// 读取 CSV 文件
+	reader := csv.NewReader(csvFile)
+	reader.FieldsPerRecord = -1 // 允许字段数量不一致
+	records, err := reader.ReadAll()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "读取 CSV 文件失败"})
+		return
+	}
+
+	// 解析 CSV 数据并导入数据库
+	for i, record := range records {
+		// 跳过表头
+		if i == 0 {
+			continue
+		}
+
+		// 解析 CSV 记录
+		book := models.Book{
+			Name:         record[1],
+			Author:       record[2],
+			Publish:      record[3],
+			ISBN:         record[4],
+			Introduction: record[5],
+			Language:     record[6],
+			Price:        parseFloat(record[7]), // 解析价格
+			PubDate:      record[8],
+			ClassID:      parseInt64(record[9]), // 解析分类 ID
+			Number:       parseInt(record[10]),  // 解析数量
+			Image:        record[11],
+		}
+
+		// 将图书信息保存到数据库
+		if err := utils.DB.Create(&book).Error; err != nil {
+			log.Printf("导入第 %d 条记录失败: %v", i+1, err)
+			continue
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{"success": "图书信息导入成功"})
+}
+
+// 辅助函数：解析字符串为 float64
+func parseFloat(s string) float64 {
+	value, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0.0
+	}
+	return value
+}
+
+// 辅助函数：解析字符串为 int64
+func parseInt64(s string) int64 {
+	value, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0
+	}
+	return value
+}
+
+// 辅助函数：解析字符串为 int
+func parseInt(s string) int {
+	value, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return value
+}
+
+// AdminBookExport 导出图书信息为 CSV
+func AdminBookExport(c *gin.Context) {
+	// 从数据库获取所有图书记录
+	books := getAllBooks()
+
+	// 设置响应头，告诉浏览器这是一个 CSV 文件
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Disposition", "attachment; filename=导出的图书.csv")
+
+	// 创建 CSV 写入器
+	writer := csv.NewWriter(c.Writer)
+	defer writer.Flush()
+
+	// 写入 CSV 表头
+	header := []string{
+		"BookID", "Name", "Author", "Publish", "ISBN", "Introduction",
+		"Language", "Price", "PubDate", "ClassID", "Number", "Image",
+	}
+	if err := writer.Write(header); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "写入 CSV 表头失败"})
+		return
+	}
+
+	// 写入图书数据
+	for _, book := range books {
+		record := []string{
+			strconv.FormatInt(book.BookID, 10), // BookID
+			book.Name,                          // Name
+			book.Author,                        // Author
+			book.Publish,                       // Publish
+			book.ISBN,                          // ISBN
+			book.Introduction,                  // Introduction
+			book.Language,                      // Language
+			strconv.FormatFloat(book.Price, 'f', 2, 64), // Price
+			book.PubDate,                        // PubDate
+			strconv.FormatInt(book.ClassID, 10), // ClassID
+			strconv.Itoa(book.Number),           // Number
+			book.Image,                          // Image
+		}
+		if err := writer.Write(record); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "写入 CSV 数据失败"})
+			return
+		}
 	}
 }
 

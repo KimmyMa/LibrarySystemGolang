@@ -34,6 +34,9 @@ func main() {
 		authorized.DELETE("/admin/book/:id", controllers.AdminBookDelete)
 		authorized.GET("/admin/book/add", controllers.AdminShowBookAddPage)
 		authorized.POST("/admin/book", controllers.AdminBookCreate)
+		authorized.GET("/admin/book/import", controllers.AdminShowBookImportPage)
+		authorized.POST("/admin/book/import", controllers.AdminBookImport)
+		authorized.GET("/admin/book/export", controllers.AdminBookExport)
 
 		// 管理员借阅相关路由
 		authorized.GET("/admin/lend", controllers.AdminLendList)

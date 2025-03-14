@@ -31,7 +31,8 @@ CREATE TABLE `books`
     `price`        DECIMAL(10, 2) NOT NULL,
     `pub_date`     VARCHAR(10)    NOT NULL,
     `class_id`     INT NOT NULL,
-    `number`       INT DEFAULT NULL
+    `number`       INT DEFAULT NULL,
+    `image`        TEXT
 ) ENGINE = INNODB
   DEFAULT CHARSET = utf8;
 

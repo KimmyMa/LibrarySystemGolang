@@ -12,6 +12,7 @@ type Book struct {
 	PubDate      string  `json:"pub_date"`
 	ClassID      int64   `json:"class_id"`
 	Number       int     `json:"number"`
+	Image        string  `json:"image"`
 
 	// 定义外键关系
 	ClassInfo ClassInfo `gorm:"foreignKey:ClassID;references:ClassID"`

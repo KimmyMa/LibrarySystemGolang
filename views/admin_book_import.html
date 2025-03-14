@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导入图书</title>
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/jquery-3.2.1.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <style>
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        body {
+            background-image: url('/static/img/sky.jpg');
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body>
+
+
+{{template "admin_header.html" .}}
+<div id="header"></div>
+<div class="container upload-export-container">
+    <h2>图书信息导入与导出</h2>
+    <div class="col-md-6">
+        <h3>导入图书信息</h3>
+        <form action="/admin/book/import" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <input type="file" accept=".csv,text/csv" class="form-control" id="bookFile" name="bookFile" required>
+            </div>
+            <button type="submit" class="btn btn-primary" onclick="submitBookImport()">导入</button>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <h3>导出图书信息</h3>
+        <div class="form-group">
+            <input type="file" style="visibility: hidden">
+        </div>
+        <a href="/admin/book/export" class="btn btn-success" style="position: relative;bottom: 0; left: 0;">导出</a>
+    </div>
+</div>
+<script>
+    function submitBookImport() {
+        // 获取文件输入元素
+        const fileInput = document.getElementById('bookFile');
+        const file = fileInput.files[0]; // 获取选中的文件
+
+        // 创建 FormData 对象
+        const formData = new FormData();
+        formData.append('bookFile', file); // 将文件添加到 FormData
+
+        // 使用 fetch 提交文件
+        fetch('/admin/book/import', {
+            method: 'POST',
+            body: formData, // 直接传递 FormData
+            // 注意：不要设置 Content-Type 头部，浏览器会自动设置
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.success);
+                    window.location.href = "/admin/book"; // 跳转到图书列表页面
+                } else {
+                    alert("添加失败：" + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("添加失败：" + error);
+            });
+    }
+</script>
+</body>
+</html>

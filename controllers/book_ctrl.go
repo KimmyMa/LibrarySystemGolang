@@ -12,6 +12,25 @@ import (
 	"strconv"
 )
 
+// 获取读者已预约的图书ID列表
+func getMyReserveList(readerID int64) []int64 {
+	var reserveList []models.Reserve
+	var myReserveList []int64
+
+	// 查询读者的借阅记录
+	if err := utils.DB.Where("reader_id = ?", readerID).Find(&reserveList).Error; err != nil {
+		fmt.Println("Error fetching reserve list:", err)
+		return nil
+	}
+
+	// 提取图书ID
+	for _, record := range reserveList {
+		myReserveList = append(myReserveList, record.BookID)
+	}
+
+	return myReserveList
+}
+
 // 获取读者已借阅的图书ID列表
 func getMyLendList(readerID int64) []int64 {
 	var lendList []models.Lend
@@ -40,17 +59,21 @@ func ReaderBook(c *gin.Context) {
 		return
 	}
 	readerID, _ := strconv.ParseInt(readerIDStr, 10, 64)
-	myLendList := getMyLendList(readerID) // 获取读者已借阅的图书ID列表
-	// 将 myLendList 转换为 map，便于前端快速判断
+
 	myLendMap := make(map[int64]bool)
-	for _, bookID := range myLendList {
+	for _, bookID := range getMyLendList(readerID) {
 		myLendMap[bookID] = true
 	}
 
+	myReserveMap := make(map[int64]bool)
+	for _, bookID := range getMyReserveList(readerID) {
+		myReserveMap[bookID] = true
+	}
 	if len(books) > 0 {
 		c.HTML(http.StatusOK, "reader_book.html", gin.H{
-			"books":     books,
-			"myLendMap": myLendMap, // 确保传递到模板中
+			"books":        books,
+			"myLendMap":    myLendMap, // 确保传递到模板中
+			"myReserveMap": myReserveMap,
 		})
 	} else {
 		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "没有匹配的图书"})

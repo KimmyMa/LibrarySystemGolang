@@ -79,21 +79,24 @@
                 </td>
                 <td>
                     {{if index $.myLendMap .BookID}}
-                    <a>
-                        <button type="button" class="btn btn-warning btn-xs" onclick="returnBook({{.BookID}})">归还
-                        </button>
-                    </a>
+                        <a>
+                            <button type="button" class="btn btn-warning btn-xs" onclick="returnBook({{.BookID}})">归还
+                            </button>
+                        </a>
                     {{else}}
-                    {{if gt .Number 0}}
-                    <a>
-                        <button type="button" class="btn btn-primary btn-xs" onclick="lendBook({{.BookID}})">借阅
-                        </button>
-                    </a>
-                    {{else}}
-                    <button type="button" class="btn btn-default btn-xs" disabled>已空</button>
-                    <button type="button" class="btn btn-success btn-xs" onclick="reserveBook({{.BookID}})">预约
-                    </button>
-                    {{end}}
+                        {{if gt .Number 0}}
+                            <a>
+                                <button type="button" class="btn btn-primary btn-xs" onclick="lendBook({{.BookID}})">借阅
+                                </button>
+                            </a>
+                        {{else}}
+                            {{if index $.myReserveMap .BookID}}
+                                <button type="button" class="btn btn-success btn-xs" disabled>已预约</button>
+                            {{else}}
+                                <button type="button" class="btn btn-default btn-xs" disabled>已空</button>
+                                <button type="button" class="btn btn-success btn-xs" onclick="reserveBook({{.BookID}})">预约</button>
+                                {{end}}
+                            {{end}}
                     {{end}}
                 </td>
                 <td>

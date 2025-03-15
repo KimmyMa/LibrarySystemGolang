@@ -80,6 +80,10 @@ func ReaderBook(c *gin.Context) {
 	}
 }
 
+func ReaderBookHot(c *gin.Context) {
+	c.HTML(http.StatusOK, "reader_book_hot.html", gin.H{"error": "没有匹配的图书"})
+}
+
 // AdminShowBookPage 获取所有图书
 func AdminShowBookPage(c *gin.Context) {
 	books := queryBook(c)

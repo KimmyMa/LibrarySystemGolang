@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的借还</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/echarts.min.js"></script>
     <script src="/static/js/jquery-3.2.1.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <style>
@@ -13,6 +14,18 @@
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-attachment: fixed;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .panel {
+            width: 48%; /* 设置每个面板的宽度 */
+        }
+        #pieChart {
+            width: 100%;
+            height: 400px;
         }
     </style>
 </head>
@@ -27,42 +40,89 @@
     </div>
 </div>
 
-<div class="panel panel-default" style="width: 90%; margin-left: 5%; margin-top: 5%">
-    <div class="panel-heading">
-        <h3 class="panel-title">我的借还日志</h3>
-    </div>
-    <div class="panel-body">
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>流水号</th>
-                <th>图书号</th>
-                <th>图书名</th>
-                <th>读者证号</th>
-                <th>姓名</th>
-                <th>借出日期</th>
-                <th>归还日期</th>
-                <th>状态</th>
-            </tr>
-            </thead>
-            <tbody>
-            {{range .lends}}
+<div class="container" style="position: relative; top: 80px; width: 90%; margin-left: 5%">
+    <!-- 借还日志面板 -->
+    <div class="panel panel-default" >
+        <div class="panel-heading">
+            <h3 class="panel-title">我的借还日志</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-hover">
+                <thead>
                 <tr>
-                    <td>{{.SerNum}}</td>
-                    <td>{{.BookID}}</td>
-                    <td>{{.Book.Name}}</td>
-                    <td>{{.ReaderID}}</td>
-                    <td>{{.ReaderInfo.Name}}</td>
-                    <td>{{.LendDate}}</td>
-                    <td>{{.BackDate}}</td>
-                    <td>
-                        {{if eq .BackDate.String ""}}未还{{else}}已还{{end}}
-                    </td>
+                    <th>流水号</th>
+                    <th>图书号</th>
+                    <th>图书名</th>
+                    <th>读者证号</th>
+                    <th>姓名</th>
+                    <th>借出日期</th>
+                    <th>归还日期</th>
+                    <th>状态</th>
                 </tr>
-            {{end}}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                {{range .lends}}
+                    <tr>
+                        <td>{{.SerNum}}</td>
+                        <td>{{.BookID}}</td>
+                        <td>{{.Book.Name}}</td>
+                        <td>{{.ReaderID}}</td>
+                        <td>{{.ReaderInfo.Name}}</td>
+                        <td>{{.LendDate}}</td>
+                        <td>{{.BackDate}}</td>
+                        <td>
+                            {{if eq .BackDate.String ""}}未还{{else}}已还{{end}}
+                        </td>
+                    </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 饼图面板 -->
+    <div class="panel panel-default">
+        <div id="pieChart"></div>
     </div>
 </div>
+
+<script type="text/javascript">
+    // 初始化饼图
+    var pieChart = echarts.init(document.getElementById('pieChart'));
+    var pieOption = {
+        title: {
+            text: '个人借阅图书分类占比',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item'
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left'
+        },
+        series: [
+            {
+                name: '借阅分类',
+                type: 'pie',
+                radius: '50%',
+                data: [
+                    {value: 40, name: '小说'},
+                    {value: 30, name: '历史'},
+                    {value: 20, name: '科技'},
+                    {value: 10, name: '艺术'}
+                ],
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+    pieChart.setOption(pieOption);
+</script>
 </body>
 </html>

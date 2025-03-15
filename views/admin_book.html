@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全部图书信息</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/echarts.min.js"></script>
     <script src="/static/js/jquery-3.2.1.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <style>
@@ -14,6 +15,23 @@
             background-size: 100% 100%;
             background-attachment: fixed;
         }
+        /* 新增样式：搜索框和柱状图并排展示 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 10% 10px; /* 调整左右边距 */
+        }
+
+        #searchform {
+            flex: 1;
+            margin-right: 20px; /* 搜索框和柱状图之间的间距 */
+        }
+
+        #barChart {
+            flex: 1;
+            height: 200px; /* 设置柱状图高度与搜索框一致 */
+        }
     </style>
 </head>
 <body>
@@ -21,7 +39,8 @@
 {{template "admin_header.html" .}}
 <div id="header"></div>
 
-<div style="padding: 70px 550px 10px">
+<!-- 修改后的搜索框和柱状图容器 -->
+<div class="search-container">
     <form class="form-inline" id="searchform">
         <div class="input-group">
             <select class="form-control" name="search_field" id="search_field">
@@ -39,6 +58,9 @@
             </span>
         </div>
     </form>
+
+    <!-- 柱状图容器 -->
+    <div id="barChart" style="width: 50%; height: 200px;"></div>
 </div>
 
 <div style="position: relative; top: 10%">
@@ -152,6 +174,40 @@
                 });
         }
     }
+</script>
+<script type="text/javascript">
+    // 初始化柱状图
+    var barChart = echarts.init(document.getElementById('barChart'));
+    var barOption = {
+        title: {
+            text: '当前热门借阅图书分类',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: ['小说', '历史', '科技', '艺术']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name: '借阅量',
+                type: 'bar',
+                data: [120, 90, 60, 30],
+                itemStyle: {
+                    color: '#5470C6'
+                }
+            }
+        ]
+    };
+    barChart.setOption(barOption);
 </script>
 </body>
 </html>

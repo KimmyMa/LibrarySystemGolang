@@ -5,14 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全部图书信息</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/echarts.min.js"></script>
     <script src="/static/js/jquery-3.2.1.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <style>
         body {
-            background-image: url('/static/img/lizhi.jpg');
+            background-image: url('/static/img/sky.jpg');
             background-repeat: no-repeat;
             background-size: 100% 100%;
             background-attachment: fixed;
+        }
+
+        /* 新增样式：搜索框和柱状图并排展示 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 10% 10px; /* 调整左右边距 */
+        }
+
+        #searchform {
+            flex: 1;
+            margin-right: 20px; /* 搜索框和柱状图之间的间距 */
+        }
+
+        #barChart {
+            flex: 1;
+            height: 200px; /* 设置柱状图高度与搜索框一致 */
         }
     </style>
 </head>
@@ -20,7 +39,8 @@
 {{template "reader_header.html" .}}
 <div id="header"></div>
 
-<div style="padding: 20px 550px 10px">
+<!-- 修改后的搜索框和柱状图容器 -->
+<div class="search-container">
     <form class="form-inline" id="searchform">
         <div class="input-group">
             <select class="form-control" name="search_field" id="search_field">
@@ -38,6 +58,9 @@
             </span>
         </div>
     </form>
+
+    <!-- 柱状图容器 -->
+    <div id="barChart" style="width: 50%; height: 200px;"></div>
 </div>
 
 <div class="panel panel-default" style="width: 90%; margin-left: 5%">
@@ -79,24 +102,25 @@
                 </td>
                 <td>
                     {{if index $.myLendMap .BookID}}
-                        <a>
-                            <button type="button" class="btn btn-warning btn-xs" onclick="returnBook({{.BookID}})">归还
-                            </button>
-                        </a>
+                    <a>
+                        <button type="button" class="btn btn-warning btn-xs" onclick="returnBook({{.BookID}})">归还
+                        </button>
+                    </a>
                     {{else}}
-                        {{if gt .Number 0}}
-                            <a>
-                                <button type="button" class="btn btn-primary btn-xs" onclick="lendBook({{.BookID}})">借阅
-                                </button>
-                            </a>
-                        {{else}}
-                            {{if index $.myReserveMap .BookID}}
-                                <button type="button" class="btn btn-success btn-xs" disabled>已预约</button>
-                            {{else}}
-                                <button type="button" class="btn btn-default btn-xs" disabled>已空</button>
-                                <button type="button" class="btn btn-success btn-xs" onclick="reserveBook({{.BookID}})">预约</button>
-                                {{end}}
-                            {{end}}
+                    {{if gt .Number 0}}
+                    <a>
+                        <button type="button" class="btn btn-primary btn-xs" onclick="lendBook({{.BookID}})">借阅
+                        </button>
+                    </a>
+                    {{else}}
+                    {{if index $.myReserveMap .BookID}}
+                    <button type="button" class="btn btn-success btn-xs" disabled>已预约</button>
+                    {{else}}
+                    <button type="button" class="btn btn-default btn-xs" disabled>已空</button>
+                    <button type="button" class="btn btn-success btn-xs" onclick="reserveBook({{.BookID}})">预约
+                    </button>
+                    {{end}}
+                    {{end}}
                     {{end}}
                 </td>
                 <td>
@@ -203,6 +227,41 @@
                 alert('发生错误: ' + error);
             });
     }
+</script>
+
+<script type="text/javascript">
+    // 初始化柱状图
+    var barChart = echarts.init(document.getElementById('barChart'));
+    var barOption = {
+        title: {
+            text: '当前热门借阅图书分类',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: ['小说', '历史', '科技', '艺术']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name: '借阅量',
+                type: 'bar',
+                data: [120, 90, 60, 30],
+                itemStyle: {
+                    color: '#5470C6'
+                }
+            }
+        ]
+    };
+    barChart.setOption(barOption);
 </script>
 </body>
 </html>

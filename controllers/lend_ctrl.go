@@ -3,6 +3,8 @@ package controllers
 import (
 	"LibrarySystemGolang/models"
 	"LibrarySystemGolang/utils"
+	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -46,7 +48,33 @@ func ReaderLend(c *gin.Context) {
 		c.HTML(http.StatusOK, "reader_lend.html", gin.H{"error": "无法获取借阅记录"})
 		return
 	}
-	c.HTML(http.StatusOK, "reader_lend.html", gin.H{"lends": lends})
+	data := gin.H{
+		"lends":         lends,
+		"lendStatsJSON": queryReaderLends(readerID),
+	}
+	c.HTML(http.StatusOK, "reader_lend.html", data)
+}
+func queryReaderLends(readerID int64) string {
+	// 查询个人名下的借阅记录，并按图书分类进行统计
+	var lendStats []struct {
+		ClassName string `json:"class_name"`
+		Count     int    `json:"count"`
+	}
+
+	if err := utils.DB.Table("lends").
+		Select("class_infos.class_name AS class_name, COUNT(*) AS count").
+		Joins("JOIN books ON lends.book_id = books.book_id").
+		Joins("JOIN class_infos ON books.class_id = class_infos.class_id").
+		Where("lends.reader_id = ?", readerID).
+		Group("class_infos.class_name").
+		Order("count DESC").
+		Scan(&lendStats).Error; err != nil {
+		fmt.Println("Error querying lend statistics:", err)
+	}
+
+	// 将 lendStats 转换为 JSON 字符串
+	lendStatsJSON, _ := json.Marshal(lendStats)
+	return string(lendStatsJSON)
 }
 func AdminReserveAccept(c *gin.Context) {
 	serNumStr := c.Param("id")

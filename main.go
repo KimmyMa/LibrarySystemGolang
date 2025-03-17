@@ -2,11 +2,20 @@ package main
 
 import (
 	"LibrarySystemGolang/controllers"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"html/template"
 )
 
+func safeJS(data interface{}) template.JS {
+	return template.JS(fmt.Sprintf("%v", data))
+}
 func main() {
 	r := gin.Default()
+	// 注册自定义函数
+	r.SetFuncMap(template.FuncMap{
+		"safeJS": safeJS,
+	})
 	r.Use(controllers.ErrorMiddleware())
 	r.LoadHTMLGlob("views/*")
 	r.Static("/views", "./views")

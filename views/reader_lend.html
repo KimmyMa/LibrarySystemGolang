@@ -15,14 +15,17 @@
             background-size: 100% 100%;
             background-attachment: fixed;
         }
+
         .container {
             display: flex;
             justify-content: space-between;
             margin-top: 20px;
         }
+
         .panel {
             width: 48%; /* 设置每个面板的宽度 */
         }
+
         #pieChart {
             width: 100%;
             height: 400px;
@@ -42,7 +45,7 @@
 
 <div class="container" style="position: relative; top: 80px; width: 90%; margin-left: 5%">
     <!-- 借还日志面板 -->
-    <div class="panel panel-default" >
+    <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">我的借还日志</h3>
         </div>
@@ -62,18 +65,25 @@
                 </thead>
                 <tbody>
                 {{range .lends}}
-                    <tr>
-                        <td>{{.SerNum}}</td>
-                        <td>{{.BookID}}</td>
-                        <td>{{.Book.Name}}</td>
-                        <td>{{.ReaderID}}</td>
-                        <td>{{.ReaderInfo.Name}}</td>
-                        <td>{{.LendDate}}</td>
-                        <td>{{.BackDate}}</td>
-                        <td>
-                            {{if eq .BackDate.String ""}}未还{{else}}已还{{end}}
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{.SerNum}}</td>
+                    <td>{{.BookID}}</td>
+                    <td>{{.Book.Name}}</td>
+                    <td>{{.ReaderID}}</td>
+                    <td>{{.ReaderInfo.Name}}</td>
+                    <td>{{.LendDate}}</td>
+                    <td>{{.BackDate}}</td>
+                    <td>
+                        {{if eq .BackDate.String ""}}
+                        <a>
+                            <button type="button" class="btn btn-warning btn-xs" onclick="returnBook({{.BookID}})">归还
+                            </button>
+                        </a>
+                        {{else}}
+                        已还
+                        {{end}}
+                    </td>
+                </tr>
                 {{end}}
                 </tbody>
             </table>
@@ -85,33 +95,70 @@
         <div id="pieChart"></div>
     </div>
 </div>
+<script>
 
+    function returnBook(bookId) {
+        if (!confirm("确认归还图书")) {
+            return
+        }
+        // 使用 PUT 请求发送数据到后端
+        fetch(`/reader/return/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({bookId: bookId}) // 可以根据需要发送更多数据
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.success);
+                    window.location.href = "/reader/lend";
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                alert('发生错误: ' + error);
+            });
+    }
+</script>
 <script type="text/javascript">
+    // 获取后端传递的借阅统计数据（JSON 字符串）
+    var lendStats = JSON.parse('{{.lendStatsJSON | safeJS}}');
+
     // 初始化饼图
     var pieChart = echarts.init(document.getElementById('pieChart'));
+
+    // 提取分类名称和借阅量
+    var classNames = lendStats.map(function (item) {
+        return item.class_name;
+    });
+    var counts = lendStats.map(function (item) {
+        return item.count;
+    });
+
+    // 饼图配置
     var pieOption = {
         title: {
-            text: '个人借阅图书分类占比',
+            text: '个人借阅分类分布',
             left: 'center'
         },
         tooltip: {
-            trigger: 'item'
-        },
-        legend: {
-            orient: 'vertical',
-            left: 'left'
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
         series: [
             {
-                name: '借阅分类',
+                name: '借阅量',
                 type: 'pie',
                 radius: '50%',
-                data: [
-                    {value: 40, name: '小说'},
-                    {value: 30, name: '历史'},
-                    {value: 20, name: '科技'},
-                    {value: 10, name: '艺术'}
-                ],
+                data: classNames.map(function (name, index) {
+                    return {
+                        name: name,
+                        value: counts[index]
+                    };
+                }),
                 emphasis: {
                     itemStyle: {
                         shadowBlur: 10,
@@ -122,6 +169,8 @@
             }
         ]
     };
+
+    // 设置饼图数据
     pieChart.setOption(pieOption);
 </script>
 </body>

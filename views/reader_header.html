@@ -22,6 +22,7 @@
         .navbar-nav > li > a {
             font-size: 1.2em;
         }
+
         .navbar-nav > li.active > a {
             background-color: #007bff; /* 活动状态的背景颜色 */
             color: white; /* 活动状态的文字颜色 */
@@ -78,7 +79,6 @@
         // 定义导航按钮的映射
         const navButtons = {
             "/reader/book": "nav-book",
-            "/reader/book/hot": "nav-book-hot",
             "/reader/info": "nav-info",
             "/reader/lend": "nav-lend",
             "/reader/repasswd": "nav-repasswd"
@@ -100,10 +100,6 @@
         document.getElementById("nav-book").addEventListener("click", function () {
             setActiveButton("nav-book");
         });
-        // 为每个按钮添加点击事件监听器
-        document.getElementById("nav-book-hot").addEventListener("click", function () {
-            setActiveButton("nav-book-hot");
-        });
         document.getElementById("nav-info").addEventListener("click", function () {
             setActiveButton("nav-info");
         });
@@ -117,7 +113,7 @@
 
     // 辅助函数：设置指定按钮为 active，其他按钮为非 active
     function setActiveButton(activeId) {
-        const buttons = ["nav-book", "nav-book-hot", "nav-info", "nav-lend", "nav-repasswd"];
+        const buttons = ["nav-book", "nav-info", "nav-lend", "nav-repasswd"];
         buttons.forEach(buttonId => {
             const button = document.getElementById(buttonId);
             if (button) {

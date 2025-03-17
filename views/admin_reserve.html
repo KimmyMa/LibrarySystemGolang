@@ -43,7 +43,7 @@
                 <th>姓名</th>
                 <th>申请日期</th>
                 <th>通过日期</th>
-                <th>通过</th>
+                <th>操作</th>
                 <th>删除</th>
             </tr>
             </thead>
@@ -57,9 +57,16 @@
                 <td>{{.ReaderInfo.Name}}</td>
                 <td>{{.RequireDate}}</td>
                 <td>{{.AcceptDate}}</td>
+                {{if eq .AcceptDate.String ""}}
                 <td>
                     <button type="button" class="btn btn-success btn-xs" onclick="acceptReserve({{.SerNum}})">通过
+                    </button>
                 </td>
+                {{else}}
+                <td>
+                    <button type="button" class="btn btn-success btn-xs" disabled>通过</button>
+                </td>
+                {{end}}
                 <td>
                     {{if eq .AcceptDate.String ""}}
                     <button type="button" class="btn btn-danger btn-xs" onclick="deleteReserve({{.SerNum}})">删除

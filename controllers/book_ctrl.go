@@ -4,6 +4,7 @@ import (
 	"LibrarySystemGolang/models"
 	"LibrarySystemGolang/utils"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -12,22 +13,34 @@ import (
 	"strconv"
 )
 
-// 获取读者已预约的图书ID列表
-func getMyReserveList(readerID int64) []int64 {
+// 获取读者已预约的图书ID列表及状态
+func getMyReserveList(readerID int64) []struct {
+	BookID   int64
+	Accepted bool
+} {
 	var reserveList []models.Reserve
-	var myReserveList []int64
+	var myReserveList []struct {
+		BookID   int64
+		Accepted bool
+	}
 
-	// 查询读者的借阅记录
+	// 查询读者的预约记录
 	if err := utils.DB.Where("reader_id = ?", readerID).Find(&reserveList).Error; err != nil {
 		fmt.Println("Error fetching reserve list:", err)
 		return nil
 	}
 
-	// 提取图书ID
+	// 提取图书ID和预约状态
 	for _, record := range reserveList {
-		myReserveList = append(myReserveList, record.BookID)
+		accepted := (!record.AcceptDate.IsZero()) // 如果 accept_date 不为空，则为 true
+		myReserveList = append(myReserveList, struct {
+			BookID   int64
+			Accepted bool
+		}{
+			BookID:   record.BookID,
+			Accepted: accepted,
+		})
 	}
-
 	return myReserveList
 }
 
@@ -50,7 +63,18 @@ func getMyLendList(readerID int64) []int64 {
 	return myLendList
 }
 func ReaderBook(c *gin.Context) {
-	books := queryBook(c)
+	// 获取分页参数
+	page, _ := strconv.Atoi(c.Query("page"))
+	if page <= 0 {
+		page = 1
+	}
+	size, _ := strconv.Atoi(c.Query("size"))
+	if size <= 0 {
+		size = 20 // 默认每页显示20条
+	}
+
+	// 调用 queryBook 获取图书数据和总记录数
+	books, total := queryBook(c)
 
 	// 从Cookie中获取读者ID
 	readerIDStr, err := c.Cookie("readercard")
@@ -65,30 +89,77 @@ func ReaderBook(c *gin.Context) {
 		myLendMap[bookID] = true
 	}
 
-	myReserveMap := make(map[int64]bool)
-	for _, bookID := range getMyReserveList(readerID) {
-		myReserveMap[bookID] = true
+	// 获取读者的借阅和预约信息
+	myRequireReserveMap := make(map[int64]bool)
+	myAcceptReserveMap := make(map[int64]bool)
+	for _, reserve := range getMyReserveList(readerID) {
+		if reserve.Accepted {
+			myAcceptReserveMap[reserve.BookID] = true
+		} else {
+			myRequireReserveMap[reserve.BookID] = true
+		}
 	}
+	// 计算总页数
+	totalPages := (total + int64(size) - 1) / int64(size)
+	// 准备模板数据
+	data := gin.H{
+		"books":               books,
+		"lendStatsJSON":       queryLends(),
+		"myLendMap":           myLendMap,
+		"myRequireReserveMap": myRequireReserveMap,
+		"myAcceptReserveMap":  myAcceptReserveMap,
+		"currentPage":         page,
+		"totalPages":          totalPages,
+		"pageSize":            size,
+		"searchField":         c.Query("search_field"),
+		"searchKeyword":       c.Query("search_keyword"),
+		"prevPage":            page - 1,
+		"nextPage":            page + 1,
+		"hasPrev":             page > 1,
+		"hasNext":             page < int(totalPages),
+	}
+
+	// 渲染模板
 	if len(books) > 0 {
-		c.HTML(http.StatusOK, "reader_book.html", gin.H{
-			"books":        books,
-			"myLendMap":    myLendMap, // 确保传递到模板中
-			"myReserveMap": myReserveMap,
-		})
+		c.HTML(http.StatusOK, "reader_book.html", data)
 	} else {
 		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "没有匹配的图书"})
 	}
 }
 
-func ReaderBookHot(c *gin.Context) {
-	c.HTML(http.StatusOK, "reader_book_hot.html", gin.H{"error": "没有匹配的图书"})
-}
-
 // AdminShowBookPage 获取所有图书
 func AdminShowBookPage(c *gin.Context) {
-	books := queryBook(c)
+	// 获取分页参数
+	page, _ := strconv.Atoi(c.Query("page"))
+	if page <= 0 {
+		page = 1
+	}
+	size, _ := strconv.Atoi(c.Query("size"))
+	if size <= 0 {
+		size = 20 // 默认每页显示20条
+	}
+
+	// 调用 queryBook 获取图书数据和总记录数
+	books, total := queryBook(c)
+	// 计算总页数
+	totalPages := (total + int64(size) - 1) / int64(size)
+
+	// 准备模板数据
+	data := gin.H{
+		"books":         books,
+		"lendStatsJSON": queryLends(),
+		"currentPage":   page,
+		"totalPages":    totalPages,
+		"pageSize":      size,
+		"searchField":   c.Query("search_field"),
+		"searchKeyword": c.Query("search_keyword"),
+		"prevPage":      page - 1,
+		"nextPage":      page + 1,
+		"hasPrev":       page > 1,
+		"hasNext":       page < int(totalPages),
+	}
 	if len(books) > 0 {
-		c.HTML(http.StatusOK, "admin_book.html", gin.H{"books": books})
+		c.HTML(http.StatusOK, "admin_book.html", data)
 	} else {
 		c.HTML(http.StatusOK, "admin_book.html", gin.H{"error": "没有匹配的图书"})
 	}
@@ -327,20 +398,61 @@ func ReaderBookDetail(c *gin.Context) {
 	}
 }
 
-// 辅助函数
-func queryBook(c *gin.Context) []models.Book {
-	// 获取前端传入的查询参数
+func queryBook(c *gin.Context) ([]models.Book, int64) {
+	// 获取查询参数
 	searchField := c.Query("search_field")
 	searchKeyword := c.Query("search_keyword")
-	if searchKeyword == "" {
-		return getAllBooks()
+
+	// 获取分页参数
+	page, _ := strconv.Atoi(c.Query("page"))
+	if page <= 0 {
+		page = 1
 	}
+	size, _ := strconv.Atoi(c.Query("size"))
+	if size <= 0 {
+		size = 20 // 默认每页显示20条
+	}
+
+	// 默认查询所有图书
 	var books []models.Book
-	var querySql = fmt.Sprintf("%s LIKE ?", searchField)
-	if err := utils.DB.Preload("ClassInfo").Where(querySql, "%"+searchKeyword+"%").Find(&books).Error; err != nil {
-		fmt.Println("Error querying books:", err)
+	var total int64
+
+	db := utils.DB.Model(&models.Book{}).Preload("ClassInfo")
+
+	// 如果有查询关键字，则添加查询条件
+	if searchKeyword != "" {
+		querySql := fmt.Sprintf("%s LIKE ?", searchField)
+		db = db.Where(querySql, "%"+searchKeyword+"%")
 	}
-	return books
+
+	// 查询总记录数
+	db.Count(&total)
+
+	// 分页查询
+	db.Offset((page - 1) * size).Limit(size).Find(&books)
+
+	return books, total
+}
+func queryLends() string {
+
+	// 查询借阅表并统计每种图书分类的借阅量
+	var lendStats []struct {
+		ClassName string `json:"class_name"`
+		Count     int    `json:"count"`
+	}
+	if err := utils.DB.Table("lends").
+		Select("class_infos.class_name AS class_name, COUNT(*) AS count").
+		Joins("JOIN books ON lends.book_id = books.book_id").
+		Joins("JOIN class_infos ON books.class_id = class_infos.class_id").
+		Group("class_infos.class_name").
+		Order("count DESC"). // 按借阅量倒序排列
+		Scan(&lendStats).Error; err != nil {
+		fmt.Println("Error querying lend statistics:", err)
+	}
+
+	// 将 lendStats 转换为 JSON 字符串
+	lendStatsJSON, _ := json.Marshal(lendStats)
+	return string(lendStatsJSON)
 }
 
 func getAllBooks() []models.Book {

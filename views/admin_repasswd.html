@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>读者主页</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/crypto-js.min.js"></script>
     <script src="/static/js/jquery-3.2.1.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <style>
@@ -30,7 +31,8 @@
                 <div class="input-group">
                     <input type="password" id="oldPasswd" name="oldPasswd" placeholder="输入旧密码"
                            class="form-control">
-                    <input type="password" id="newPasswd" name="newPasswd" placeholder="请输入 8 - 16 位包含字母、数字和特殊字符的密码"
+                    <input type="password" id="newPasswd" name="newPasswd"
+                           placeholder="请输入 8 - 16 位包含字母、数字和特殊字符的密码"
                            class="form-control">
                     <input type="password" id="reNewPasswd" name="reNewPasswd" placeholder="再次输入新密码"
                            class="form-control">
@@ -72,9 +74,12 @@
             alert("提示:两次输入的新密码不同，请检查!");
             return;
         }
+        // 使用 SHA-256 对密码进行哈希处理
+        const hashedOldPasswd = CryptoJS.SHA256(oldPasswd).toString();
+        const hashedNewPasswd = CryptoJS.SHA256(newPasswd).toString();
         const formData = {
-            oldPasswd: oldPasswd,
-            newPasswd: newPasswd,
+            oldPasswd: hashedOldPasswd,
+            newPasswd: hashedNewPasswd,
         };
         fetch('/admin/repasswd', {
             method: 'PUT',

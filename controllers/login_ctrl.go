@@ -3,11 +3,38 @@ package controllers
 import (
 	"LibrarySystemGolang/models"
 	"LibrarySystemGolang/utils"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 )
+
+// generateSaltedHash 使用自定义盐对密码进行哈希处理
+func generateSaltedHash(passwordSHA256 string) (string, error) {
+	salt := "1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"
+	// 将SHA256字符串转换为字节数组
+	passwordBytes, err := hex.DecodeString(passwordSHA256)
+	if err != nil {
+		return "", fmt.Errorf("invalid SHA256 hash: %w", err)
+	}
+
+	// 将盐转换为字节数组
+	saltBytes := []byte(salt)
+
+	// 将密码和盐拼接
+	combined := append(passwordBytes, saltBytes...)
+
+	// 使用SHA256对拼接后的数据进行哈希处理
+	hash := sha256.New()
+	hash.Write(combined)
+	hashedBytes := hash.Sum(nil)
+
+	// 返回哈希值的十六进制字符串
+	return hex.EncodeToString(hashedBytes), nil
+}
 
 func ToLogin(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", nil)
@@ -121,9 +148,8 @@ func AdminRePassWrod(c *gin.Context) {
 		return
 	}
 
-	inputOldPasswd := req.OldPasswd
-	newPasswd := req.NewPasswd
-
+	inputOldPasswd, _ := generateSaltedHash(req.OldPasswd)
+	newPasswd, _ := generateSaltedHash(req.NewPasswd)
 	adminId, _ := strconv.ParseInt(adminIDStr, 10, 64)
 	dbOldPasswd := getAdminPassword(adminId)
 	if dbOldPasswd != inputOldPasswd {
@@ -160,8 +186,8 @@ func ReaderRePassWord(c *gin.Context) {
 		return
 	}
 
-	inputOldPasswd := req.OldPasswd
-	newPasswd := req.NewPasswd
+	inputOldPasswd, _ := generateSaltedHash(req.OldPasswd)
+	newPasswd, _ := generateSaltedHash(req.NewPasswd)
 
 	readerId, _ := strconv.ParseInt(readerIdStr, 10, 64)
 	dbOldPasswd := getReaderPassword(readerId)
@@ -187,6 +213,7 @@ func NotFound(c *gin.Context) {
 
 // 数据库操作函数
 func hasMatchAdmin(id string, password string) bool {
+	password, _ = generateSaltedHash(password)
 	var count int64
 	if err := utils.DB.Model(&models.Admin{}).Where("admin_id = ? AND password = ?", id, password).Count(&count).Error; err != nil {
 		log.Println("Error checking admin:", err)
@@ -196,6 +223,7 @@ func hasMatchAdmin(id string, password string) bool {
 }
 
 func hasMatchReader(id string, password string) bool {
+	password, _ = generateSaltedHash(password)
 	var count int64
 	if err := utils.DB.Model(&models.ReaderCard{}).Where("reader_id = ? AND password = ?", id, password).Count(&count).Error; err != nil {
 		log.Println("Error checking reader:", err)

@@ -4,7 +4,7 @@
 -- SET NAMES utf8;
 -- START TRANSACTION;
 INSERT INTO `admins`
-VALUES (123456, '123456', 'admins');
+VALUES (123456, '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd', 'admins');
 INSERT INTO class_infos
 VALUES
 	( 1, '马克思主义' ),
@@ -53,12 +53,12 @@ VALUES ('张华', '男', '1995-06-10', '天津市', '12345678900'),
        ('李一琛', '男', '1996-01-01', '陕西省西安市', '15123659875'),
        ('李二飞', '男', '1996-05-03', '山东省青岛市', '15369874123');
 INSERT INTO `reader_cards`
-VALUES (10000, '张华', '123456'),
-       (10001, '王小伟', '123456'),
-       (10002, '王莞尔', '123456'),
-       (10003, '张明华', '123456'),
-       (10004, '李一琛', '123456'),
-       (10005, '李二飞', '123456');
+VALUES (10000, '张华', '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd'),
+       (10001, '王小伟', '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd'),
+       (10002, '王莞尔', '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd'),
+       (10003, '张明华', '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd'),
+       (10004, '李一琛', '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd'),
+       (10005, '李二飞', '7175a33746f2ea6b9e8eb9964d0bd2bad7dedd2a33fea6aa41418e02ae2044bd');
 INSERT INTO `lends`
 VALUES (1, 1, 10000, '2017-03-15', '2017-06-16'),
        (2, 2, 10001, '2017-06-10', '2017-09-02'),

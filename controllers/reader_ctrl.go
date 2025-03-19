@@ -178,6 +178,7 @@ func AdminReaderCreate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "添加读者信息失败"})
 		return
 	}
+	frontData.PassWord, _ = generateSaltedHash(frontData.PassWord)
 	// 添加读者卡信息
 	readerCard := models.ReaderCard{
 		ReaderID: readerInfo.ReaderID,

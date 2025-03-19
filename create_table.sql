@@ -3,8 +3,8 @@ USE db_test;
 -- 创建表
 CREATE TABLE `admins`
 (
-    `admin_id` BIGINT      NOT NULL PRIMARY KEY,
-    `password` VARCHAR(15) NOT NULL,
+    `admin_id` BIGINT NOT NULL PRIMARY KEY,
+    `password` TEXT,
     `username` VARCHAR(15) DEFAULT NULL
 ) ENGINE = INNODB
   DEFAULT CHARSET = utf8;
@@ -87,7 +87,7 @@ CREATE TABLE `reader_cards`
 (
     `reader_id` BIGINT      NOT NULL PRIMARY KEY,
     `username`  VARCHAR(15) NOT NULL,
-    `password`  VARCHAR(15) NOT NULL
+    `password`  TEXT
 ) ENGINE = INNODB
   DEFAULT CHARSET = utf8;
 

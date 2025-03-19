@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>添加读者</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/crypto-js.min.js"></script>
     <script src="/static/js/jquery-3.2.1.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <style>
@@ -81,7 +82,7 @@
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                password: password,
+                password: CryptoJS.SHA256(password).toString(),
                 name: name,
                 sex: sex,
                 birth: birth,

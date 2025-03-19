@@ -64,14 +64,7 @@ func getMyLendList(readerID int64) []int64 {
 }
 func ReaderBook(c *gin.Context) {
 	// 获取分页参数
-	page, _ := strconv.Atoi(c.Query("page"))
-	if page <= 0 {
-		page = 1
-	}
-	size, _ := strconv.Atoi(c.Query("size"))
-	if size <= 0 {
-		size = 20 // 默认每页显示20条
-	}
+	page, size := getPageAndSize(c)
 
 	// 调用 queryBook 获取图书数据和总记录数
 	books, total := queryBook(c)
@@ -130,14 +123,7 @@ func ReaderBook(c *gin.Context) {
 // AdminShowBookPage 获取所有图书
 func AdminShowBookPage(c *gin.Context) {
 	// 获取分页参数
-	page, _ := strconv.Atoi(c.Query("page"))
-	if page <= 0 {
-		page = 1
-	}
-	size, _ := strconv.Atoi(c.Query("size"))
-	if size <= 0 {
-		size = 20 // 默认每页显示20条
-	}
+	page, size := getPageAndSize(c)
 
 	// 调用 queryBook 获取图书数据和总记录数
 	books, total := queryBook(c)
@@ -397,12 +383,7 @@ func ReaderBookDetail(c *gin.Context) {
 		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "图书未找到"})
 	}
 }
-
-func queryBook(c *gin.Context) ([]models.Book, int64) {
-	// 获取查询参数
-	searchField := c.Query("search_field")
-	searchKeyword := c.Query("search_keyword")
-
+func getPageAndSize(c *gin.Context) (int, int) {
 	// 获取分页参数
 	page, _ := strconv.Atoi(c.Query("page"))
 	if page <= 0 {
@@ -412,6 +393,15 @@ func queryBook(c *gin.Context) ([]models.Book, int64) {
 	if size <= 0 {
 		size = 20 // 默认每页显示20条
 	}
+	return page, size
+}
+
+func queryBook(c *gin.Context) ([]models.Book, int64) {
+	// 获取查询参数
+	searchField := c.Query("search_field")
+	searchKeyword := c.Query("search_keyword")
+
+	page, size := getPageAndSize(c)
 
 	// 默认查询所有图书
 	var books []models.Book
@@ -421,8 +411,14 @@ func queryBook(c *gin.Context) ([]models.Book, int64) {
 
 	// 如果有查询关键字，则添加查询条件
 	if searchKeyword != "" {
-		querySql := fmt.Sprintf("%s LIKE ?", searchField)
-		db = db.Where(querySql, "%"+searchKeyword+"%")
+		switch searchField {
+		case "class_name":
+			db = db.Joins("JOIN class_infos ON books.class_id = class_infos.class_id").
+				Where("class_infos.class_name LIKE ?", "%"+searchKeyword+"%")
+		default:
+			querySql := fmt.Sprintf("%s LIKE ?", searchField)
+			db = db.Where(querySql, "%"+searchKeyword+"%")
+		}
 	}
 
 	// 查询总记录数

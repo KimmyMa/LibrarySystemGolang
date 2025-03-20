@@ -15,5 +15,5 @@ type Book struct {
 	Image        string  `json:"image"`
 
 	// 定义外键关系
-	ClassInfo ClassInfo `gorm:"foreignKey:ClassID;references:ClassID"`
+	ClassInfo ClassInfo `gorm:"foreignKey:ClassID;references:ClassID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

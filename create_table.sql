@@ -95,35 +95,35 @@ CREATE TABLE `reader_cards`
 ALTER TABLE `books`
     ADD CONSTRAINT `fk_class_infos_class_id`
         FOREIGN KEY (`class_id`) REFERENCES `class_infos` (`class_id`)
-            ON DELETE RESTRICT
+            ON DELETE CASCADE
             ON UPDATE CASCADE;
 ALTER TABLE `lends`
     ADD CONSTRAINT `fk_lends_book_id`
         FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`)
-            ON DELETE RESTRICT
+            ON DELETE CASCADE
             ON UPDATE CASCADE;
 
 ALTER TABLE `lends`
     ADD CONSTRAINT `fk_lends_reader_id`
         FOREIGN KEY (`reader_id`) REFERENCES `reader_infos` (`reader_id`)
-            ON DELETE RESTRICT
+            ON DELETE CASCADE
             ON UPDATE CASCADE;
 
 ALTER TABLE `reserves`
     ADD CONSTRAINT `fk_reserves_book_id`
         FOREIGN KEY (`book_id`) REFERENCES `books` (`book_id`)
-            ON DELETE RESTRICT
+            ON DELETE CASCADE
             ON UPDATE CASCADE;
 
 ALTER TABLE `reserves`
     ADD CONSTRAINT `fk_reserves_reader_id`
         FOREIGN KEY (`reader_id`) REFERENCES `reader_infos` (`reader_id`)
-            ON DELETE RESTRICT
+            ON DELETE CASCADE
             ON UPDATE CASCADE;
 
 ALTER TABLE `reader_cards`
     ADD CONSTRAINT `fk_reader_cards_reader_id`
         FOREIGN KEY (`reader_id`) REFERENCES `reader_infos` (`reader_id`)
-            ON DELETE RESTRICT
+            ON DELETE CASCADE
             ON UPDATE CASCADE;
 COMMIT;

@@ -235,13 +235,23 @@ func AdminBookImport(c *gin.Context) {
 			Image:        record[11],
 		}
 
-		// 将图书信息保存到数据库
-		if err := utils.DB.Create(&book).Error; err != nil {
-			log.Printf("导入第 %d 条记录失败: %v", i+1, err)
-			continue
+		// 检查 ISBN 是否已经存在
+		var existingBook models.Book
+		if err := utils.DB.Where("isbn = ?", book.ISBN).First(&existingBook).Error; err == nil {
+			// 如果存在，更新数量
+			existingBook.Number += book.Number
+			if err := utils.DB.Save(&existingBook).Error; err != nil {
+				log.Printf("更新第 %d 条记录失败: %v", i+1, err)
+				continue
+			}
+		} else {
+			// 如果不存在，插入新记录
+			if err := utils.DB.Create(&book).Error; err != nil {
+				log.Printf("导入第 %d 条记录失败: %v", i+1, err)
+				continue
+			}
 		}
 	}
-
 	c.JSON(http.StatusOK, gin.H{"success": "图书信息导入成功"})
 }
 

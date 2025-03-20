@@ -145,14 +145,12 @@
         <span>第 {{.currentPage}} 页 / 共 {{.totalPages}} 页</span>
         <a href="/admin/book?page={{.nextPage}}&size={{.pageSize}}&search_field={{.searchField}}&search_keyword={{.searchKeyword}}"
            class="btn btn-default" {{if not .hasNext}}disabled{{end}}>下一页</a>
-    </div>
-    <div class="page-size-selector">
-        每页显示：
+        每页显示
         <form action="/admin/book" method="GET" style="display: inline-block;">
             <input type="hidden" name="page" value="1"> <!-- 重置到第一页 -->
             <input type="hidden" name="search_field" value="{{.searchField}}">
             <input type="hidden" name="search_keyword" value="{{.searchKeyword}}">
-            <select name="size" onchange="this.form.submit()" class="form-control"
+            <select name="size" onchange="this.form.submit()" class="btn btn-default"
                     style="display: inline-block; width: auto;">
                 <option value="20" {{if eq .pageSize 20}}selected{{end}}>20</option>
                 <option value="50" {{if eq .pageSize 50}}selected{{end}}>50</option>
@@ -240,7 +238,7 @@
         yAxis: {
             type: 'value',
             axisLabel: {
-                formatter: function(value) {
+                formatter: function (value) {
                     return parseInt(value); // 确保 Y 轴显示整数
                 }
             },

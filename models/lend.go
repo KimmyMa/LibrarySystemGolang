@@ -8,6 +8,6 @@ type Lend struct {
 	BackDate LocalDate `json:"back_date"`
 
 	// 定义外键关系
-	Book       Book       `gorm:"foreignKey:BookID;references:BookID"`
-	ReaderInfo ReaderInfo `gorm:"foreignKey:ReaderID;references:ReaderID"`
+	Book       Book       `gorm:"foreignKey:BookID;references:BookID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ReaderInfo ReaderInfo `gorm:"foreignKey:ReaderID;references:ReaderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

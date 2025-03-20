@@ -6,5 +6,5 @@ type ReaderCard struct {
 	Password string `json:"password"`
 
 	// 定义外键关系
-	ReaderInfo ReaderInfo `gorm:"foreignKey:ReaderID;references:ReaderID"`
+	ReaderInfo ReaderInfo `gorm:"foreignKey:ReaderID;references:ReaderID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 }

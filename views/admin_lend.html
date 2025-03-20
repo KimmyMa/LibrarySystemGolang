@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>借还日志</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <script src="/static/js/echarts.min.js"></script>
     <script src="/static/js/jquery-3.2.1.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
     <style>
@@ -14,62 +15,83 @@
             background-size: 100% 100%;
             background-attachment: fixed;
         }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .panel {
+            width: 48%; /* 设置每个面板的宽度 */
+        }
+
+        #pieChart {
+            width: 100%;
+            height: 400px;
+        }
     </style>
 </head>
 <body>
 {{template "admin_header.html" .}}
 <div id="header"></div>
 
-
-<div style="position: relative; padding-top: 100px">
+<div style="position: relative; top: 10%">
     <div id="messages" class="alert alert-dismissible" style="display: none;">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
         <span id="messageText"></span>
     </div>
 </div>
 
-<div class="panel panel-default" style="width: 90%; margin-left: 5%">
-    <div class="panel-heading">
-        <h3 class="panel-title">借还日志</h3>
+<div class="container" style="position: relative; top: 80px; width: 90%; margin-left: 5%">
+    <!-- 借还日志面板 -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">我的借还日志</h3>
+        </div>
+        <div class="panel-body">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>流水号</th>
+                    <th>图书号</th>
+                    <th>图书名</th>
+                    <th>读者证号</th>
+                    <th>姓名</th>
+                    <th>借出日期</th>
+                    <th>归还日期</th>
+                    <th>状态</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{range .lends}}
+                <tr>
+                    <td>{{.SerNum}}</td>
+                    <td>{{.BookID}}</td>
+                    <td>{{.Book.Name}}</td>
+                    <td>{{.ReaderID}}</td>
+                    <td>{{.ReaderInfo.Name}}</td>
+                    <td>{{.LendDate}}</td>
+                    <td>{{.BackDate}}</td>
+                    <td>
+                        {{if eq .BackDate.String ""}}
+                        <button type="button" class="btn btn-danger btn-xs" disabled>删除</button>
+                        {{else}}
+                        <button type="button" class="btn btn-danger btn-xs" onclick="deleteLend({{.SerNum}})">删除
+                        </button>
+                        {{end}}
+                    </td>
+                </tr>
+                {{end}}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="panel-body">
-        <table class="table table-hover">
-            <thead>
-            <tr>
-                <th>流水号</th>
-                <th>图书号</th>
-                <th>图书名</th>
-                <th>读者证号</th>
-                <th>姓名</th>
-                <th>借出日期</th>
-                <th>归还日期</th>
-                <th>删除</th>
-            </tr>
-            </thead>
-            <tbody>
-            {{range .lends}}
-            <tr>
-                <td>{{.SerNum}}</td>
-                <td>{{.BookID}}</td>
-                <td>{{.Book.Name}}</td>
-                <td>{{.ReaderID}}</td>
-                <td>{{.ReaderInfo.Name}}</td>
-                <td>{{.LendDate}}</td>
-                <td>{{.BackDate}}</td>
-                <td>
-                    {{if eq .BackDate.String ""}}
-                    <button type="button" class="btn btn-danger btn-xs" disabled>删除</button>
-                    {{else}}
-                    <button type="button" class="btn btn-danger btn-xs" onclick="deleteLend({{.SerNum}})">删除</button>
-                    {{end}}
-                </td>
-            </tr>
-            {{end}}
-            </tbody>
-        </table>
+
+    <!-- 饼图面板 -->
+    <div class="panel panel-default">
+        <div id="pieChart"></div>
     </div>
 </div>
-
 <script>
     function deleteLend(serNum) {
         if (confirm("确定要删除这条记录吗？")) {
@@ -91,6 +113,56 @@
         }
     }
 
+</script>
+<script type="text/javascript">
+    // 获取后端传递的借阅统计数据（JSON 字符串）
+    var lendStats = JSON.parse('{{.lendStatsJSON | safeJS}}');
+
+    // 初始化饼图
+    var pieChart = echarts.init(document.getElementById('pieChart'));
+
+    // 提取分类名称和借阅量
+    var classNames = lendStats.map(function (item) {
+        return item.class_name;
+    });
+    var counts = lendStats.map(function (item) {
+        return item.count;
+    });
+
+    // 饼图配置
+    var pieOption = {
+        title: {
+            text: '读者借阅分类分布',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
+        },
+        series: [
+            {
+                name: '借阅量',
+                type: 'pie',
+                radius: '50%',
+                data: classNames.map(function (name, index) {
+                    return {
+                        name: name,
+                        value: counts[index]
+                    };
+                }),
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+
+    // 设置饼图数据
+    pieChart.setOption(pieOption);
 </script>
 </body>
 </html>

@@ -30,7 +30,12 @@ func AdminLendList(c *gin.Context) {
 		c.HTML(http.StatusOK, "admin_lend.html", gin.H{"error": "无法获取借阅记录"})
 		return
 	}
-	c.HTML(http.StatusOK, "admin_lend.html", gin.H{"lends": lends})
+	data := gin.H{
+		"lends":         lends,
+		"lendStatsJSON": queryReaderLends(0),
+	}
+	fmt.Println(data)
+	c.HTML(http.StatusOK, "admin_lend.html", data)
 }
 
 // ReaderLend 获取当前读者的借阅记录
@@ -61,14 +66,19 @@ func queryReaderLends(readerID int64) string {
 		Count     int    `json:"count"`
 	}
 
-	if err := utils.DB.Table("lends").
+	query := utils.DB.Table("lends").
 		Select("class_infos.class_name AS class_name, COUNT(*) AS count").
 		Joins("JOIN books ON lends.book_id = books.book_id").
 		Joins("JOIN class_infos ON books.class_id = class_infos.class_id").
-		Where("lends.reader_id = ?", readerID).
 		Group("class_infos.class_name").
-		Order("count DESC").
-		Scan(&lendStats).Error; err != nil {
+		Order("count DESC")
+
+	// 如果 readerID 不为 0，则按 reader_id 过滤
+	if readerID != 0 {
+		query = query.Where("lends.reader_id = ?", readerID)
+	}
+
+	if err := query.Scan(&lendStats).Error; err != nil {
 		fmt.Println("Error querying lend statistics:", err)
 	}
 

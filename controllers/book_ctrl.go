@@ -97,7 +97,6 @@ func ReaderBook(c *gin.Context) {
 	// 准备模板数据
 	data := gin.H{
 		"books":               books,
-		"lendStatsJSON":       queryLends(),
 		"myLendMap":           myLendMap,
 		"myRequireReserveMap": myRequireReserveMap,
 		"myAcceptReserveMap":  myAcceptReserveMap,
@@ -119,6 +118,112 @@ func ReaderBook(c *gin.Context) {
 		c.HTML(http.StatusOK, "reader_book.html", gin.H{"error": "没有匹配的图书"})
 	}
 }
+func BookHot(c *gin.Context) {
+
+	// 获取分页参数
+	page, size := getPageAndSize(c)
+	keyWord := c.Query("classID")
+	classID := 0
+	if keyWord != "" {
+		// 获取分类ID
+		classID, _ = strconv.Atoi(keyWord)
+	}
+
+	// 获取所有分类信息
+	var categories []models.ClassInfo
+	if err := utils.DB.Find(&categories).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "无法获取分类信息"})
+		return
+	}
+
+	// 定义热门图书结构
+	type HotBook struct {
+		Book      models.Book `json:"book"`
+		LendCount int         `json:"lend_count"`
+	}
+	// 创建一个映射，将 ClassID 映射到 ClassName
+	classMap := make(map[int64]string)
+	for _, category := range categories {
+		classMap[category.ClassID] = category.ClassName
+	}
+
+	// 查询借阅数量前5名的图书对象
+	var results []struct {
+		BookID       int64            `json:"book_id"`
+		Name         string           `json:"name"`
+		Author       string           `json:"author"`
+		Publish      string           `json:"publish"`
+		ISBN         string           `json:"isbn"`
+		Introduction string           `json:"introduction"`
+		Language     string           `json:"language"`
+		Price        float64          `json:"price"`
+		PubDate      string           `json:"pub_date"`
+		ClassID      int64            `json:"class_id"`
+		Number       int              `json:"number"`
+		Image        string           `json:"image"`
+		LendCount    int              `json:"lend_count"`
+		ClassInfo    models.ClassInfo `gorm:"foreignKey:ClassID;references:ClassID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	}
+
+	var total int64
+	var db = utils.DB.Model(&models.Lend{}).Preload("ClassInfo").
+		Select("books.book_id, books.name, books.author, books.publish, books.isbn, books.introduction, books.language, books.price, books.pub_date, books.class_id, books.number, books.image, COUNT(lends.book_id) AS lend_count").
+		Joins("JOIN books ON lends.book_id = books.book_id")
+	if classID != 0 {
+		db = db.Where("books.class_id = ?", classID)
+	}
+	db = db.Group("books.book_id").Order("COUNT(lends.book_id) DESC")
+
+	// 查询总记录数
+	db.Count(&total)
+	// 分页查询
+	db.Offset((page - 1) * size).Limit(size).Scan(&results)
+
+	// 将查询结果映射到 HotBook 结构体
+	var hotBooks []HotBook
+	for _, result := range results {
+		hotBooks = append(hotBooks, HotBook{
+			Book: models.Book{
+				BookID:       result.BookID,
+				Name:         result.Name,
+				Author:       result.Author,
+				Publish:      result.Publish,
+				ISBN:         result.ISBN,
+				Introduction: result.Introduction,
+				Language:     result.Language,
+				Price:        result.Price,
+				PubDate:      result.PubDate,
+				ClassID:      result.ClassID,
+				Number:       result.Number,
+				Image:        result.Image,
+				ClassInfo:    result.ClassInfo,
+			},
+			LendCount: result.LendCount,
+		})
+	}
+	// 计算总页数
+	totalPages := (total + int64(size) - 1) / int64(size)
+	// 准备模板数据
+	data := gin.H{
+		"class_info":    categories,
+		"lendStatsJSON": queryLends(),
+		"class_map":     classMap, // 添加分类映射
+		"hot_books":     hotBooks,
+		"currentPage":   page,
+		"totalPages":    totalPages,
+		"pageSize":      size,
+		"prevPage":      page - 1,
+		"nextPage":      page + 1,
+		"hasPrev":       page > 1,
+		"hasNext":       page < int(totalPages),
+	}
+	isAdmin, _ := c.Cookie("isAdmin")
+	if isAdmin == "true" {
+		c.HTML(http.StatusOK, "admin_book_hot.html", data)
+	} else {
+		c.HTML(http.StatusOK, "reader_book_hot.html", data)
+	}
+}
 
 // AdminShowBookPage 获取所有图书
 func AdminShowBookPage(c *gin.Context) {
@@ -133,7 +238,35 @@ func AdminShowBookPage(c *gin.Context) {
 	// 准备模板数据
 	data := gin.H{
 		"books":         books,
-		"lendStatsJSON": queryLends(),
+		"currentPage":   page,
+		"totalPages":    totalPages,
+		"pageSize":      size,
+		"searchField":   c.Query("search_field"),
+		"searchKeyword": c.Query("search_keyword"),
+		"prevPage":      page - 1,
+		"nextPage":      page + 1,
+		"hasPrev":       page > 1,
+		"hasNext":       page < int(totalPages),
+	}
+	if len(books) > 0 {
+		c.HTML(http.StatusOK, "admin_book.html", data)
+	} else {
+		c.HTML(http.StatusOK, "admin_book.html", gin.H{"error": "没有匹配的图书"})
+	}
+
+}
+func AdminShowBookHotPage(c *gin.Context) {
+	// 获取分页参数
+	page, size := getPageAndSize(c)
+
+	// 调用 queryBook 获取图书数据和总记录数
+	books, total := queryBook(c)
+	// 计算总页数
+	totalPages := (total + int64(size) - 1) / int64(size)
+
+	// 准备模板数据
+	data := gin.H{
+		"books":         books,
 		"currentPage":   page,
 		"totalPages":    totalPages,
 		"pageSize":      size,

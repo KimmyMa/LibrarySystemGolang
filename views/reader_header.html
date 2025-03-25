@@ -40,6 +40,9 @@
                 <li id="nav-book">
                     <a href="/reader/book">图书查询</a>
                 </li>
+                <li id="nav-book-hot">
+                    <a href="/reader/book/hot">热门图书推荐</a>
+                </li>
                 <li id="nav-info">
                     <a href="/reader/info">个人信息</a>
                 </li>
@@ -79,6 +82,7 @@
         // 定义导航按钮的映射
         const navButtons = {
             "/reader/book": "nav-book",
+            "/reader/book/hot": "nav-book-hot",
             "/reader/info": "nav-info",
             "/reader/lend": "nav-lend",
             "/reader/repasswd": "nav-repasswd"
@@ -100,6 +104,9 @@
         document.getElementById("nav-book").addEventListener("click", function () {
             setActiveButton("nav-book");
         });
+        document.getElementById("nav-book-hot").addEventListener("click", function () {
+            setActiveButton("nav-book-hot");
+        });
         document.getElementById("nav-info").addEventListener("click", function () {
             setActiveButton("nav-info");
         });
@@ -113,7 +120,7 @@
 
     // 辅助函数：设置指定按钮为 active，其他按钮为非 active
     function setActiveButton(activeId) {
-        const buttons = ["nav-book", "nav-info", "nav-lend", "nav-repasswd"];
+        const buttons = ["nav-book", "nav-book-hot", "nav-info", "nav-lend", "nav-repasswd"];
         buttons.forEach(buttonId => {
             const button = document.getElementById(buttonId);
             if (button) {

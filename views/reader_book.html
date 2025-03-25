@@ -15,32 +15,13 @@
             background-size: 100% 100%;
             background-attachment: fixed;
         }
-
-        /* 新增样式：搜索框和柱状图并排展示 */
-        .search-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 10% 10px; /* 调整左右边距 */
-        }
-
-        #searchform {
-            flex: 1;
-            margin-right: 20px; /* 搜索框和柱状图之间的间距 */
-        }
-
-        #barChart {
-            flex: 1;
-            height: 200px; /* 设置柱状图高度与搜索框一致 */
-        }
     </style>
 </head>
 <body>
 {{template "reader_header.html" .}}
 <div id="header"></div>
 
-<!-- 修改后的搜索框和柱状图容器 -->
-<div class="search-container">
+<div style="padding: 20px 550px 10px">
     <form class="form-inline" id="searchform">
         <div class="input-group">
             <select class="form-control" name="search_field" id="search_field">
@@ -59,9 +40,6 @@
             </span>
         </div>
     </form>
-
-    <!-- 柱状图容器 -->
-    <div id="barChart" style="width: 50%; height: 200px;"></div>
 </div>
 
 <div class="panel panel-default" style="width: 90%; margin-left: 5%">
@@ -176,7 +154,7 @@
     }
 
     function returnBook(bookId) {
-        if (!confirm("确认归还图书")) {
+        if (!confirm("确认归还图书")){
             return
         }
         // 使用 PUT 请求发送数据到后端
@@ -202,7 +180,7 @@
     }
 
     function lendBook(bookId) {
-        if (!confirm("确认借阅图书")) {
+        if (!confirm("确认借阅图书")){
             return
         }
         // 使用 PUT 请求发送数据到后端
@@ -226,93 +204,6 @@
                 alert('发生错误: ' + error);
             });
     }
-
-    function reserveBook(bookId) {
-        if (!confirm("确认预约图书")) {
-            return
-        }
-        // 使用 PUT 请求发送数据到后端
-        fetch(`/reader/reserve/${bookId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({bookId: bookId}) // 可以根据需要发送更多数据
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.success);
-                    window.location.href = "/reader/book";
-                } else {
-                    alert(data.error);
-                }
-            })
-            .catch(error => {
-                alert('发生错误: ' + error);
-            });
-    }
-</script>
-
-<script type="text/javascript">
-    // 获取后端传递的借阅统计数据（JSON 字符串）
-    var lendStats = JSON.parse('{{.lendStatsJSON | safeJS}}');
-
-    // 初始化柱状图
-    var barChart = echarts.init(document.getElementById('barChart'));
-
-    // 提取分类名称和借阅量
-    var classNames = lendStats.map(function (item) {
-        return item.class_name;
-    });
-    var counts = lendStats.map(function (item) {
-        return item.count;
-    });
-
-    // 柱状图配置
-    var barOption = {
-        title: {
-            text: '当前热门借阅图书分类',
-            left: 'center'
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'shadow'
-            }
-        },
-        xAxis: {
-            type: 'category',
-            data: classNames,
-            axisLabel: {
-                textStyle: {
-                    color: '#070707'
-                }
-            }
-        },
-        yAxis: {
-            type: 'value',
-            axisLabel: {
-                formatter: function (value) {
-                    return parseInt(value); // 确保 Y 轴显示整数
-                }
-            },
-            interval: 1 // 设置 Y 轴的每个刻度间隔为 1
-        },
-        series: [
-            {
-                name: '借阅量',
-                type: 'bar',
-                data: counts,
-                itemStyle: {
-                    color: '#25c5fb'
-                }
-            }
-        ]
-    };
-
-    // 设置柱状图数据
-    barChart.setOption(barOption);
 </script>
 </body>
 </html>

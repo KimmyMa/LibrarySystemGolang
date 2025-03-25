@@ -38,6 +38,7 @@ func main() {
 		// 管理员图书相关路由
 		authorized.GET("/admin/book", controllers.AdminShowBookPage)
 		authorized.GET("/admin/book/:id", controllers.AdminBookDetail)
+		authorized.GET("/admin/book/hot", controllers.BookHot)
 		authorized.GET("/admin/book/update/:id", controllers.AdminShowBookUpdatePage)
 		authorized.PUT("/admin/book/:id", controllers.AdminBookUpdate)
 		authorized.DELETE("/admin/book/:id", controllers.AdminBookDelete)
@@ -74,6 +75,7 @@ func main() {
 		// 读者图书相关路由
 		authorized.GET("/reader/book", controllers.ReaderBook)
 		authorized.GET("/reader/book/:id", controllers.ReaderBookDetail)
+		authorized.GET("/reader/book/hot", controllers.BookHot)
 
 		// 读者借阅相关路由
 		authorized.GET("/reader/lend", controllers.ReaderLend)

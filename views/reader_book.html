@@ -93,9 +93,9 @@
                     </a>
                     {{else}}
                     {{if index $.myRequireReserveMap .BookID}}
-                    <button type="button" class="btn btn-warning btn-xs" disabled>审批中</button>
+                    <button type="button" class="btn btn-warning btn-xs" disabled>预约审批中</button>
                     {{else if index $.myAcceptReserveMap .BookID}}
-                    <button type="button" class="btn btn-success btn-xs" disabled>已预约</button>
+                    <button type="button" class="btn btn-success btn-xs" disabled>预约已通过</button>
                     {{else}}
                     <button type="button" class="btn btn-default btn-xs" disabled>已空</button>
                     <button type="button" class="btn btn-success btn-xs" onclick="reserveBook({{.BookID}})">预约
@@ -154,7 +154,7 @@
     }
 
     function returnBook(bookId) {
-        if (!confirm("确认归还图书")){
+        if (!confirm("确认归还图书")) {
             return
         }
         // 使用 PUT 请求发送数据到后端
@@ -180,11 +180,37 @@
     }
 
     function lendBook(bookId) {
-        if (!confirm("确认借阅图书")){
+        if (!confirm("确认借阅图书")) {
             return
         }
         // 使用 PUT 请求发送数据到后端
         fetch(`/reader/lend/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({bookId: bookId}) // 可以根据需要发送更多数据
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.success);
+                    window.location.href = "/reader/book";
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                alert('发生错误: ' + error);
+            });
+    }
+
+    function reserveBook(bookId) {
+        if (!confirm("确认预约图书")) {
+            return
+        }
+        // 使用 PUT 请求发送数据到后端
+        fetch(`/reader/reserve/${bookId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
